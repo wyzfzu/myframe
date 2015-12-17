@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<generatorConfig>
+    <jdbcConfig>
+        <driverClass>com.mysql.jdbc.Driver</driverClass>
+        <connectionUrl>
+            jdbc:mysql://localhost:3306/testdb?useUnicode=true&amp;characterEncoding=UTF-8
+        </connectionUrl>
+        <userName>root</userName>
+        <password>wuyuzhen</password>
+        <schema>testdb</schema>
+    </jdbcConfig>
+
+    <javaModelConfig>
+        <targetPackage>com.myframe.pojo</targetPackage>
+        <targetDir>/Users/wuyuzhen/generate</targetDir>
+    </javaModelConfig>
+
+    <javaDaoConfig>
+        <targetPackage>com.myframe.pojo</targetPackage>
+        <targetDir>/Users/wuyuzhen/generate</targetDir>
+        <!--
+            generic: 使用泛型DAO
+            spring: 使用spring实现
+        -->
+        <mode>generic</mode>
+    </javaDaoConfig>
+
+    <javaServiceConfig>
+        <targetPackage>com.myframe.pojo.service</targetPackage>
+        <targetDir>/Users/wuyuzhen/generate</targetDir>
+    </javaServiceConfig>
+
+    <sqlMapConfig>
+        <targetPackage></targetPackage>
+        <!-- 生成路径 -->
+        <targetDir>/Users/wuyuzhen/generate</targetDir>
+        <!-- 表示xml文件的路径 -->
+        <resourceDir>mapper</resourceDir>
+    </sqlMapConfig>
+
+    <generateConfig>
+        <!--
+            all=true,  其他配置项失效
+            all=false, 各配置项生效
+        -->
+        <all>true</all>
+        <selectList>true</selectList>
+        <selectCount>true</selectCount>
+        <selectById>true</selectById>
+        <selectOne>false</selectOne>
+        <updateById>false</updateById>
+        <updateByChain>false</updateByChain>
+        <insert>true</insert>
+        <delete>false</delete>
+        <deleteById>true</deleteById>
+    </generateConfig>
+
+    <tableConfig>
+        <tablePattern>%</tablePattern>
+        <!-- 需要去除的表名前缀 -->
+        <trimPrefix>t_,tb_,tbl_,v_</trimPrefix>
+        <!-- 主键自增（目前只支持自增方式） -->
+        <autoIncrement>true</autoIncrement>
+        <!-- 数据库字段和表名大小写：lower, upper, mix -->
+        <caseFormat>lower</caseFormat>
+        <!--
+         include: includes优先
+         exclude: excludes优先
+         -->
+        <priority>include</priority>
+        <!-- 需要排除的表 -->
+        <excludes>
+            <!-- 排除全部
+            <exclude>*</exclude>
+            -->
+            <!-- 支持java正则表达式 -->
+            <exclude>*</exclude>
+        </excludes>
+        <!-- 需要包含的表 -->
+        <includes>
+            <!-- 包含全部 -->
+            <include>*</include>
+        </includes>
+    </tableConfig>
+</generatorConfig>

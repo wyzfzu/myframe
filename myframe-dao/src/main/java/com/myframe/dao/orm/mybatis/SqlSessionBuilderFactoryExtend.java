@@ -3,13 +3,14 @@
 package com.myframe.dao.orm.mybatis;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.myframe.core.util.ClassUtils;
 import com.myframe.core.util.LogUtils;
 import com.myframe.core.util.StreamUtils;
 import com.myframe.core.util.TemplateUtils;
 import com.myframe.dao.orm.mybatis.interceptor.PaginationInterceptor;
+import com.myframe.dao.util.Column;
 import com.myframe.dao.util.JdbcUtils;
 import com.myframe.dao.util.Table;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
@@ -21,7 +22,7 @@ import org.slf4j.Logger;
 import javax.sql.DataSource;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +36,6 @@ import java.util.Set;
  */
 public class SqlSessionBuilderFactoryExtend extends SqlSessionFactoryBuilder {
     private static final Logger logger = LogUtils.get();
-    private static final String TABLE_PATTERN = "%";
     private static final String MAPPER_TEMPLATE = "/mapper.xml.tpl";
     private String tablePrefix;
     private DataSource dataSource;
@@ -43,13 +43,13 @@ public class SqlSessionBuilderFactoryExtend extends SqlSessionFactoryBuilder {
 
     @Override
     public SqlSessionFactory build(Configuration config) {
-        Set<String> existClass = getAllClassNames();
+        Map<Class<?>, String> existClass = getAllClassNames();
         // 添加
-        List<Table> tables = JdbcUtils.getTableInfo(getDataSource(), getTablePrefix(), TABLE_PATTERN);
-        for (Table table : tables) {
-            if (!existClass.contains(table.getClassName())) {
-                continue;
-            }
+        for (Map.Entry<Class<?>, String> entry : existClass.entrySet()) {
+            Table table = JdbcUtils.getTableInfo(getDataSource(), getTablePrefix(), entry.getValue());
+            // 过滤没有加@Column注解的字段
+            filterTableColumns(table, entry.getKey());
+
             Map<String, Object> params = Maps.newHashMap();
             params.put("table", table);
             String tplStr = TemplateUtils.render(MAPPER_TEMPLATE, params);
@@ -72,18 +72,37 @@ public class SqlSessionBuilderFactoryExtend extends SqlSessionFactoryBuilder {
         return super.build(config);
     }
 
-    private Set<String> getAllClassNames() {
-        Set<String> exists = Sets.newHashSet();
+    private Map<Class<?>, String> getAllClassNames() {
+        Map<Class<?>, String> exists = Maps.newHashMap();
 
         for (String pojo : getPojoPackages()) {
             Set<Class<?>> existClass = ClassUtils.getClasses(pojo, true);
             for (Class<?> clazz : existClass) {
                 if (clazz.isAnnotationPresent(com.myframe.dao.orm.annotation.Table.class)) {
-                    exists.add(clazz.getSimpleName());
+                    com.myframe.dao.orm.annotation.Table tz = clazz.getAnnotation(com.myframe.dao.orm.annotation.Table.class);
+                    exists.put(clazz, tz.name());
                 }
             }
         }
         return exists;
+    }
+
+    private void filterTableColumns(Table table, Class<?> clazz) {
+        Field[] fields = clazz.getDeclaredFields();
+        List<Column> columns = table.getColumns();
+        List<Column> newColumns = Lists.newArrayList();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(com.myframe.dao.orm.annotation.Column.class)
+                    || field.isAnnotationPresent(com.myframe.dao.orm.annotation.Id.class)) {
+                String fieldName = field.getName();
+                for (Column column : columns) {
+                    if (fieldName.equals(column.getProperty())) {
+                        newColumns.add(column);
+                    }
+                }
+            }
+        }
+        table.setColumns(newColumns);
     }
 
     public Set<String> getPojoPackages() {

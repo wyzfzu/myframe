@@ -3,7 +3,7 @@
     <parent>
         <artifactId>myframe</artifactId>
         <groupId>com.myframe</groupId>
-        <version>1.1.2</version>
+        <version>1.1.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,10 +23,10 @@
         <http.core.version>4.4.4</http.core.version>
         <joda.time.version>2.9</joda.time.version>
         <commons.codec.version>1.9</commons.codec.version>
-        <beetl.version>2.2.3</beetl.version>
         <dom4j.version>1.6.1</dom4j.version>
         <jodd.version>3.6.7</jodd.version>
         <poi.version>3.13</poi.version>
+        <beetl.version>2.2.3</beetl.version>
     </properties>
 
     <dependencies>
@@ -67,6 +67,11 @@
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.beetl</groupId>
+            <artifactId>beetl-core</artifactId>
+            <version>${beetl.version}</version>
+        </dependency>
+        <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>${joda.time.version}</version>
@@ -101,11 +106,6 @@
             <groupId>org.jodd</groupId>
             <artifactId>jodd-mail</artifactId>
             <version>${jodd.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.beetl</groupId>
-            <artifactId>beetl-core</artifactId>
-            <version>${beetl.version}</version>
         </dependency>
         <dependency>
             <groupId>dom4j</groupId>

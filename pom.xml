@@ -6,7 +6,7 @@
 
     <groupId>com.myframe</groupId>
     <artifactId>myframe</artifactId>
-    <version>1.1.2</version>
+    <version>1.1.4</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -25,6 +25,7 @@
         <jodd.version>3.6.7</jodd.version>
         <slf4j.version>1.7.12</slf4j.version>
         <log4j.version>1.2.17</log4j.version>
+        <myframe.version>${project.version}</myframe.version>
     </properties>
     <build>
         <plugins>
@@ -119,6 +120,22 @@
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.myframe</groupId>
+                <artifactId>myframe-core</artifactId>
+                <version>${myframe.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
+    <distributionManagement>
+        <repository>
+            <id>meituan-nexus-releases</id>
+            <url>http://nexus.sankuai.com:8081/nexus/content/repositories/thirdparty/</url>
+        </repository>
+        <snapshotRepository>
+            <id>meituan-nexus-releases</id>
+            <url>http://nexus.sankuai.com:8081/nexus/content/repositories/3rdPartySnapshot/
+            </url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

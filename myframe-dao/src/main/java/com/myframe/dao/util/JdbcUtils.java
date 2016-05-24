@@ -139,7 +139,7 @@ public class JdbcUtils {
 		return StringUtils.toCamelCase(column.toLowerCase(), false, '_');
 	}
 
-	private static String getClassName(String tablePrefix, String tableName) {
+	public static String getClassName(String tablePrefix, String tableName) {
 		tableName = tableName.toLowerCase();
 		tablePrefix = tablePrefix.toLowerCase();
 		if (tableName.startsWith(tablePrefix)) {
@@ -151,14 +151,78 @@ public class JdbcUtils {
 		}
 		StringBuilder sb = new StringBuilder();
 
-		for (int i = 0; i < tns.length; ++i) {
-			sb.append(StringUtils.capitalize(tns[i]));
+		for (String tn : tns) {
+			sb.append(StringUtils.capitalize(tn));
 		}
 
 		return sb.toString();
 	}
 
-	public static List<Table> getTableInfo(DataSource ds, String tablePrefix, String tableNamePattern) {
+	public static Table getTableInfo(DataSource ds, String tablePrefix, String tableName) {
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+			DatabaseMetaData dma = conn.getMetaData();
+			Table table = new Table();
+			List<Column> columns = Lists.newArrayList();
+			ResultSet crs = dma.getColumns(null, null, tableName, null);
+			crs.getMetaData();
+			while (crs.next()) {
+				String columnName = crs.getString("COLUMN_NAME");
+				String jdbcType = JdbcType.forCode(crs.getInt("DATA_TYPE")).name();
+				String remark = crs.getString("REMARKS");
+				Column column = new Column();
+				column.setName(columnName);
+				column.setJdbcType(jdbcType.toUpperCase());
+				String javaType = typeMap.get(column.getJdbcType());
+				column.setJavaType(javaType);
+				column.setPk(false);
+				column.setProperty(getProperty(column.getName()));
+				column.setRemark(remark);
+				column.setFirstUpperProperty(StringUtils.capitalize(column.getProperty()));
+				columns.add(column);
+			}
+			crs.close();
+			ResultSet prs = dma.getPrimaryKeys(null, null, tableName);
+			List<Column> pks = Lists.newArrayList();
+			while (prs.next()) {
+				String columnName = prs.getString("COLUMN_NAME");
+
+				Column c = null;
+				for (Column col : columns) {
+					if (col.getName().equalsIgnoreCase(columnName)) {
+						c = col;
+						break;
+					}
+				}
+				if (c != null) {
+					c.setPk(true);
+					Column pk = new Column();
+					pk.setName(c.getName());
+					pk.setJdbcType(c.getJdbcType());
+					pk.setPk(true);
+					pk.setProperty(c.getProperty());
+					pk.setFirstUpperProperty(c.getFirstUpperProperty());
+					pk.setJavaType(c.getJavaType());
+					pks.add(pk);
+				}
+			}
+			prs.close();
+			table.setTableName(tableName);
+			table.setClassName(getClassName(tablePrefix, tableName));
+			table.setRemark("");
+			table.setPkColumns(pks);
+			table.setColumns(columns);
+
+			return table;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			close(conn);
+		}
+	}
+
+	public static List<Table> getTableInfos(DataSource ds, String tablePrefix, String tableNamePattern) {
 		List<Table> tables = Lists.newArrayList();
 		Connection conn = null;
 		try {

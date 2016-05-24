@@ -70,7 +70,7 @@ public class Table {
             return false;
         }
         Column col = pkColumns.get(0);
-        return col.getJavaType().equals("java.lang.Integer")
-                    || col.getJavaType().equals("java.lang.Long");
+        return col.getJavaType().equals("Integer")
+                    || col.getJavaType().equals("Long");
     }
 }

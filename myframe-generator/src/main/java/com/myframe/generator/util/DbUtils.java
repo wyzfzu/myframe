@@ -136,7 +136,7 @@ public class DbUtils {
         }
         StringBuilder sb = new StringBuilder();
         int start = 0;
-        if (tablePrefix.contains(tns[0] + '_')) {
+        while (tablePrefix.contains(tns[start] + '_')) {
             ++start;
         }
 

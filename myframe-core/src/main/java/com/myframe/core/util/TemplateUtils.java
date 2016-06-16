@@ -28,7 +28,7 @@ public final class TemplateUtils {
 
     static {
         try {
-            gt = new GroupTemplate(Configuration.defaultConfiguration());
+            gt = new GroupTemplate(new MyClasspathResourceLoader(), Configuration.defaultConfiguration());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RuntimeException("初始化GroupTemplate出错！");
@@ -78,5 +78,27 @@ public final class TemplateUtils {
         Template t = gt.getTemplate(template, resourceLoader);
         t.binding(bindings);
         t.renderTo(target);
+    }
+
+    static class MyClasspathResourceLoader extends ClasspathResourceLoader {
+
+        public MyClasspathResourceLoader() {
+            this("");
+        }
+
+        public MyClasspathResourceLoader(String root) {
+            super(root);
+        }
+
+        @Override
+        public void init(GroupTemplate gt) {
+            Map<String, String> resourceMap = gt.getConf().getResourceMap();
+
+            if (this.charset == null) {
+                this.charset = resourceMap.get("charset");
+            }
+
+            this.setAutoCheck(false);
+        }
     }
 }

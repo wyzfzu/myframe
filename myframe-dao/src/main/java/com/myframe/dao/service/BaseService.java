@@ -1,6 +1,6 @@
 package com.myframe.dao.service;
 
-import com.myframe.core.util.Page;
+import com.myframe.core.util.Pageable;
 import com.myframe.dao.util.Cnd;
 import com.myframe.dao.util.UpdateChain;
 
@@ -60,7 +60,7 @@ public interface BaseService<T> {
      * @param page 分页对象
      * @return 符合条件的bean列表
      */
-    public List<T> findPageList(Cnd cnd, Page<T> page);
+    public List<T> findPageList(Cnd cnd, Pageable<T> page);
 
     /**
      * 根据条件分页查询。
@@ -69,7 +69,7 @@ public interface BaseService<T> {
      * @param page 分页信息
      * @return 分页对象
      */
-    public Page<T> findPage(Cnd cnd, Page<T> page);
+    public Pageable<T> findPage(Cnd cnd, Pageable<T> page);
 
     /**
      * 根据条件分页查询。
@@ -79,7 +79,7 @@ public interface BaseService<T> {
      * @param pageSize 每页条数
      * @return 分页对象
      */
-    public Page<T> findPage(Cnd cnd, int pageNo, int pageSize);
+    public Pageable<T> findPage(Cnd cnd, int pageNo, int pageSize);
 
     /**
      * 保存bean.
@@ -136,7 +136,7 @@ public interface BaseService<T> {
      *
      * @return 所有bean数量
      */
-    public Long count();
+    public Integer count();
 
     /**
      * 根据条件来统计bean数量。
@@ -144,5 +144,5 @@ public interface BaseService<T> {
      * @param cnd 条件对象
      * @return 符合条件的bean数量
      */
-    public Long count(Cnd cnd);
+    public Integer count(Cnd cnd);
 }

@@ -5,5 +5,5 @@ import com.myframe.pojo.TestUser;
 
 public interface TestUserDao extends MyBatisGenericDao<TestUser> {
 
-    Long getCount2();
+    Integer getCount2();
 }

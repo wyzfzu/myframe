@@ -14,7 +14,7 @@ public class TestUserServiceImpl extends AbstractBaseService<TestUser> implement
     private TestUserDao testUserDao;
 
     @Override
-    public Long findCount2() {
+    public Integer findCount2() {
         return testUserDao.getCount2();
     }
 }

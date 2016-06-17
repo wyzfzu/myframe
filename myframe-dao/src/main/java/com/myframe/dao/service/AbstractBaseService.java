@@ -1,6 +1,6 @@
 package com.myframe.dao.service;
 
-import com.myframe.core.util.Page;
+import com.myframe.core.util.Pageable;
 import com.myframe.dao.orm.GenericDao;
 import com.myframe.dao.util.Cnd;
 import com.myframe.dao.util.UpdateChain;
@@ -49,17 +49,17 @@ public abstract class AbstractBaseService<T> implements BaseService<T> {
     }
 
     @Override
-    public List<T> findPageList(Cnd cnd, Page<T> page) {
+    public List<T> findPageList(Cnd cnd, Pageable<T> page) {
         return getDao().getPageList(cnd, page);
     }
 
     @Override
-    public Page<T> findPage(Cnd cnd, Page<T> page) {
+    public Pageable<T> findPage(Cnd cnd, Pageable<T> page) {
         return findPage(cnd, page.getPageNo(), page.getPageSize());
     }
 
     @Override
-    public Page<T> findPage(Cnd cnd, int pageNo, int pageSize) {
+    public Pageable<T> findPage(Cnd cnd, int pageNo, int pageSize) {
         return getDao().getPage(cnd, pageNo, pageSize);
     }
 
@@ -99,12 +99,12 @@ public abstract class AbstractBaseService<T> implements BaseService<T> {
     }
 
     @Override
-    public Long count() {
+    public Integer count() {
         return getDao().count();
     }
 
     @Override
-    public Long count(Cnd cnd) {
+    public Integer count(Cnd cnd) {
         return getDao().count(cnd);
     }
 }

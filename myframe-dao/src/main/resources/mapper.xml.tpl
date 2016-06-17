@@ -116,7 +116,7 @@
         </if>
     </select>
 
-    <select id="__selectCountInner" resultType="java.lang.Long" parameterType="${cndType}">
+    <select id="__selectCountInner" resultType="java.lang.Integer" parameterType="${cndType}">
         select count(1) from ${table.tableName}
         <include refid="WhereClause" />
     </select>

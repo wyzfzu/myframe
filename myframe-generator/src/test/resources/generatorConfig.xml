@@ -3,11 +3,11 @@
     <jdbcConfig>
         <driverClass>com.mysql.jdbc.Driver</driverClass>
         <connectionUrl>
-            jdbc:mysql://localhost:3306/testdb?useUnicode=true&amp;characterEncoding=UTF-8
+            jdbc:mysql://localhost:3307/wuyuzhen?useUnicode=true&amp;characterEncoding=UTF-8
         </connectionUrl>
         <userName>root</userName>
-        <password>wuyuzhen</password>
-        <schema>testdb</schema>
+        <password>root</password>
+        <schema>wuyuzhen</schema>
     </jdbcConfig>
 
     <javaModelConfig>

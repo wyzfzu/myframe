@@ -1,7 +1,8 @@
 package com.myframe.dao.orm.mybatis.impl;
 
+import com.myframe.core.util.DefaultPage;
 import com.myframe.core.util.GenericUtils;
-import com.myframe.core.util.Page;
+import com.myframe.core.util.Pageable;
 import com.myframe.dao.orm.mybatis.MyBatisDao;
 import com.myframe.dao.orm.mybatis.MyBatisGenericDao;
 import com.myframe.dao.util.Cnd;
@@ -87,17 +88,17 @@ public class MyBatisGenericDaoImpl<T> implements MyBatisGenericDao<T> {
     }
 
     @Override
-    public List<T> getPageList(Cnd cnd, Page<T> page) {
+    public List<T> getPageList(Cnd cnd, Pageable<T> page) {
         return getPageList(cnd, page.getPageNo(), page.getPageSize());
     }
 
     @Override
-    public Page<T> getPage(Cnd cnd, int pageNo, int pageSize) {
-        return getPage(cnd, new Page<T>(pageNo, pageSize));
+    public Pageable<T> getPage(Cnd cnd, int pageNo, int pageSize) {
+        return getPage(cnd, new DefaultPage<T>(pageNo, pageSize));
     }
 
     @Override
-    public Page<T> getPage(Cnd cnd, Page<T> page) {
+    public Pageable<T> getPage(Cnd cnd, Pageable<T> page) {
         if (cnd == null) {
             cnd = Cnd.where();
         }
@@ -146,12 +147,12 @@ public class MyBatisGenericDaoImpl<T> implements MyBatisGenericDao<T> {
     }
 
     @Override
-    public Long count() {
+    public Integer count() {
         return count(null);
     }
 
     @Override
-    public Long count(Cnd cnd) {
+    public Integer count(Cnd cnd) {
         if (cnd == null) {
             cnd = Cnd.where();
         }

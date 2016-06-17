@@ -18,7 +18,7 @@
         </if>
     </select>
 
-    <select id="selectCount2" resultType="java.lang.Long" parameterType="com.myframe.dao.util.Cnd">
+    <select id="selectCount2" resultType="java.lang.Integer" parameterType="com.myframe.dao.util.Cnd">
         select count(1) from t_test_user
         <include refid="WhereClause" />
     </select>

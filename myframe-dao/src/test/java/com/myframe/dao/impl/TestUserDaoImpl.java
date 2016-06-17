@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 public class TestUserDaoImpl extends MyBatisGenericDaoImpl<TestUser> implements TestUserDao {
 
     @Override
-    public Long getCount2() {
+    public Integer getCount2() {
         return getMyBatisDao().count(getStatement("selectCount2"), Cnd.where());
     }
 }

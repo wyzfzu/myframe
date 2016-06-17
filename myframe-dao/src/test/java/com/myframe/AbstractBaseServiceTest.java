@@ -3,6 +3,7 @@ package com.myframe;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.myframe.core.util.Page;
+import com.myframe.core.util.Pageable;
 import com.myframe.dao.util.Cnd;
 import com.myframe.dao.util.UpdateChain;
 import com.myframe.pojo.TestUser;
@@ -144,22 +145,22 @@ public class AbstractBaseServiceTest extends AbstractJUnit4SpringContextTests {
     @Test
     public void testFindPage() throws Exception {
         Page<TestUser> page = new Page<TestUser>(1, 10);
-        Page<TestUser> users = testUserService.findPage(Cnd.whereLE("id", 20L), page);
+        Pageable<TestUser> users = testUserService.findPage(Cnd.whereLE("id", 20L), page);
         Assert.assertNotNull(users);
-        Assert.assertEquals(1, users.getPageNo().intValue());
-        Assert.assertEquals(10, users.getPageSize().intValue());
-        Assert.assertNotNull(users.getContent());
-        Assert.assertEquals(20L, users.getTotalCount().longValue());
+        Assert.assertEquals(1, users.getPageNo());
+        Assert.assertEquals(10, users.getPageSize());
+        Assert.assertNotNull(users.getList());
+        Assert.assertEquals(20L, users.getTotalCount());
     }
 
     @Test
     public void testFindPage1() throws Exception {
-        Page<TestUser> users = testUserService.findPage(Cnd.whereEQ("id", 1L), 1, 10);
+        Pageable<TestUser> users = testUserService.findPage(Cnd.whereEQ("id", 1L), 1, 10);
         Assert.assertNotNull(users);
-        Assert.assertEquals(1, users.getPageNo().intValue());
-        Assert.assertEquals(10, users.getPageSize().intValue());
-        Assert.assertNotNull(users.getContent());
-        Assert.assertEquals(1L, users.getTotalCount().longValue());
+        Assert.assertEquals(1, users.getPageNo());
+        Assert.assertEquals(10, users.getPageSize());
+        Assert.assertNotNull(users.getList());
+        Assert.assertEquals(1L, users.getTotalCount());
     }
 
     @Test
@@ -239,13 +240,13 @@ public class AbstractBaseServiceTest extends AbstractJUnit4SpringContextTests {
 
     @Test
     public void testCount() throws Exception {
-        Long allCount = testUserService.count();
+        Integer allCount = testUserService.count();
         Assert.assertEquals((long) DATA_SIZE, allCount.longValue());
     }
 
     @Test
     public void testCount1() throws Exception {
-        Long count = testUserService.count(Cnd.whereLE("age", 31));
+        Integer count = testUserService.count(Cnd.whereLE("age", 31));
         Assert.assertEquals(11L, count.longValue());
     }
 
@@ -269,6 +270,6 @@ public class AbstractBaseServiceTest extends AbstractJUnit4SpringContextTests {
 
     @Test
     public void testNone() {
-        testUserService.findCount2();
+        Integer count = testUserService.findCount2();
     }
 }

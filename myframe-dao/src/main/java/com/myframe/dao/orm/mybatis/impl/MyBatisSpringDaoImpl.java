@@ -1,6 +1,6 @@
 package com.myframe.dao.orm.mybatis.impl;
 
-import com.myframe.core.util.Page;
+import com.myframe.core.util.Pageable;
 import com.myframe.dao.orm.mybatis.MyBatisDao;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -97,20 +97,20 @@ public class MyBatisSpringDaoImpl extends SqlSessionDaoSupport implements MyBati
         return getSqlSession().delete(statement, parameter);
     }
 
-	public Long count(String statement, Object parameter) {
-        Long cnt = selectOne(statement, parameter);
-		return cnt == null ? 0L : cnt;
+	public Integer count(String statement, Object parameter) {
+        Integer cnt = selectOne(statement, parameter);
+		return cnt == null ? 0 : cnt;
 	}
 
-	public <T> Page<T> selectPage(String dataSql, String countSql, Page<T> page, Object param) {
+	public <T> Pageable<T> selectPage(String dataSql, String countSql, Pageable<T> page, Object param) {
 		int maxResults = page.getPageSize();
-		int skipResults = page.getStartIndex() - 1;
+		int skipResults = (page.getPageNo() - 1) * page.getPageSize();
 		//记录集合
-		List<T> datas = selectList(dataSql, param, new RowBounds(skipResults, maxResults));
-		page.setContent(datas);
+		List<T> dataList = selectList(dataSql, param, new RowBounds(skipResults, maxResults));
+		page.setList(dataList);
 		//总数
-		Long totalItems = count(countSql, param);
-		page.setTotalCount(totalItems);
+		Integer totalCount = count(countSql, param);
+		page.setTotalCount(totalCount);
 		
 		return page;
 	}

@@ -159,6 +159,7 @@ public class Generator {
         implTpl.binding("pkg", javaServiceConfig.getTargetPackage());
         implTpl.binding("modelConfig", generatorConfig.getJavaModelConfig());
         implTpl.binding("daoConfig", generatorConfig.getJavaDaoConfig());
+        implTpl.binding("serviceConfig", javaServiceConfig);
         String implPath = FileNameUtils.concat(fullPath, "impl");
         FileUtils.createDir(implPath);
 

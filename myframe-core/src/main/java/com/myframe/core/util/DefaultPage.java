@@ -8,7 +8,7 @@ import java.util.List;
  * @author wyzfzu (wyzfzu@qq.com)
  * 
  */
-public class Page<T> implements Pageable<T> {
+public class DefaultPage<T> implements Pageable<T> {
     public static final int DEFAULT_PAGE_SIZE = 10;
 
 	/** 当前页号 */
@@ -22,15 +22,15 @@ public class Page<T> implements Pageable<T> {
 
 	/**
 	 * 根据当前页号来构造对象
-	 * 
+	 *
 	 * @param pageNo
 	 */
-	public Page(int pageNo) {
+	public DefaultPage(int pageNo) {
 		this.pageNo = pageNo;
 		this.pageSize = DEFAULT_PAGE_SIZE;
 	}
 
-    public Page(int pageNo, int pageSize) {
+    public DefaultPage(int pageNo, int pageSize) {
         this(pageNo);
         this.pageSize = pageSize;
     }
@@ -38,7 +38,7 @@ public class Page<T> implements Pageable<T> {
 	/**
 	 *  默认构造函数，当前页号默认为1
 	 */
-	public Page() {
+	public DefaultPage() {
 		this(1);
 	}
 

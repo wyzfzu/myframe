@@ -1,6 +1,6 @@
 package com.myframe.dao.orm;
 
-import com.myframe.core.util.Page;
+import com.myframe.core.util.Pageable;
 import com.myframe.dao.util.Cnd;
 import com.myframe.dao.util.UpdateChain;
 
@@ -24,11 +24,11 @@ public interface GenericDao<T> {
 
     public List<T> getPageList(Cnd cnd, int pageNo, int pageSize);
 
-    public List<T> getPageList(Cnd cnd, Page<T> page);
+    public List<T> getPageList(Cnd cnd, Pageable<T> page);
 
-    public Page<T> getPage(Cnd cnd, int pageNo, int pageSize);
+    public Pageable<T> getPage(Cnd cnd, int pageNo, int pageSize);
 
-    public Page<T> getPage(Cnd cnd, Page<T> page);
+    public Pageable<T> getPage(Cnd cnd, Pageable<T> page);
 
     public int update(T obj);
 
@@ -44,7 +44,7 @@ public interface GenericDao<T> {
 
     public void insertList(List<T> objs);
 
-    public Long count();
+    public Integer count();
 
-    public Long count(Cnd cnd);
+    public Integer count(Cnd cnd);
 }

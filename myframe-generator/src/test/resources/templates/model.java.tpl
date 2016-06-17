@@ -18,6 +18,13 @@ public class ${table.className} implements Serializable {
     <%
         for (column in table.columns) {
     %>
+    public static final String ${strutil.toUpperCase(column.name)} = "${column.property}";
+    <%
+        }
+    %>
+    <%
+        for (column in table.columns) {
+    %>
     /**
      * ${column.remark}
      */

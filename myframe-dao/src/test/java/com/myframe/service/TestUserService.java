@@ -5,5 +5,5 @@ import com.myframe.pojo.TestUser;
 
 public interface TestUserService extends BaseService<TestUser> {
 
-    Long findCount2();
+    Integer findCount2();
 }

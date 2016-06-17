@@ -1,6 +1,7 @@
 package com.myframe.dao.orm.mybatis;
 
 import com.myframe.core.util.Page;
+import com.myframe.core.util.Pageable;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
@@ -52,7 +53,7 @@ public interface MyBatisDao {
 
 	public int delete(String statement, Object parameter);
 
-	public Long count(String statement, Object parameter);
+	public Integer count(String statement, Object parameter);
 
-    public <T> Page<T> selectPage(String dataSql, String countSql, Page<T> page, Object param);
+    public <T> Pageable<T> selectPage(String dataSql, String countSql, Pageable<T> page, Object param);
 }

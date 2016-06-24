@@ -83,7 +83,7 @@ public class MyBatisGenericDaoImpl<T> implements MyBatisGenericDao<T> {
     public List<T> getPageList(Cnd cnd, int pageNo, int pageSize) {
         return getMyBatisDao().selectList(
                 getStatement(ST_SELECT_LIST),
-                cnd, new RowBounds(pageNo - 1, pageSize)
+                cnd, new RowBounds((pageNo - 1) * pageSize, pageSize)
         );
     }
 

@@ -2,7 +2,9 @@ package com.myframe.pojo;
 
 import com.myframe.dao.orm.annotation.Column;
 import com.myframe.dao.orm.annotation.Id;
+import com.myframe.dao.orm.annotation.QueryExclude;
 import com.myframe.dao.orm.annotation.Table;
+import com.myframe.dao.orm.annotation.UpdateExclude;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -26,6 +28,7 @@ public class TestUser implements Serializable {
      * 密码
      */
     @Column
+    @QueryExclude
     private String password;
     /**
      * 年龄
@@ -46,6 +49,8 @@ public class TestUser implements Serializable {
      * 创建日期
      */
     @Column
+    @UpdateExclude
+    @QueryExclude
     private Date createTime;
 
     public Long getId() {

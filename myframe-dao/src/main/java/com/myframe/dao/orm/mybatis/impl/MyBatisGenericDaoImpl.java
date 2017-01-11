@@ -8,8 +8,8 @@ import com.myframe.dao.orm.mybatis.MyBatisGenericDao;
 import com.myframe.dao.util.Cnd;
 import com.myframe.dao.util.UpdateChain;
 import org.apache.ibatis.session.RowBounds;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 
@@ -30,18 +30,13 @@ public class MyBatisGenericDaoImpl<T> implements MyBatisGenericDao<T> {
     public static final String ST_DELETE = "__deleteInner";
     public static final String ST_INSERT = "__insertInner";
 
-    @Autowired
+    @Resource
     private MyBatisDao myBatisDao;
 
     private Class<T> clazz;
 
     public MyBatisGenericDaoImpl() {
         clazz = GenericUtils.getGenericType(this.getClass());
-    }
-
-    @Override
-    public void setMyBatisDao(MyBatisDao myBatisDao) {
-        this.myBatisDao = myBatisDao;
     }
 
     @Override

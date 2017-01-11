@@ -2,9 +2,16 @@ package com.myframe.core.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import jodd.io.FileUtil;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -47,12 +54,20 @@ public class FileUtils {
         }
     }
 
+    public static String readAll(File file) {
+        return readAll(file, Encoding.UTF8);
+    }
+
     public static String readAll(File file, Charset charset) {
         try {
             return Files.toString(file, charset);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static List<String> readLines(File file) {
+        return readLines(file, Encoding.UTF8);
     }
 
     public static List<String> readLines(File file, Charset charset) {
@@ -109,7 +124,7 @@ public class FileUtils {
 
     public static void copyFileToDir(File from, File to) {
         try {
-            FileUtil.copyFileToDir(from, to);
+            org.apache.commons.io.FileUtils.copyFileToDirectory(from, to);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -125,7 +140,7 @@ public class FileUtils {
 
     public static void moveDir(File from, File to) {
         try {
-            FileUtil.moveDir(from, to);
+            org.apache.commons.io.FileUtils.moveDirectoryToDirectory(from, to, true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -158,7 +173,7 @@ public class FileUtils {
 
     public static File createDir(File dir) {
         try {
-            FileUtil.mkdirs(dir);
+            org.apache.commons.io.FileUtils.forceMkdir(dir);
             return dir;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -183,7 +198,7 @@ public class FileUtils {
 
     public static void deleteDir(File dir) {
         try {
-            FileUtil.deleteDir(dir);
+            org.apache.commons.io.FileUtils.deleteDirectory(dir);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -195,43 +210,7 @@ public class FileUtils {
 
     public static void cleanDir(File dir) {
         try {
-            FileUtil.cleanDir(dir);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String md5(String file) {
-        return md5(new File(file));
-    }
-
-    public static String md5(File file) {
-        try {
-            return FileUtil.md5(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String sha(String file) {
-        return sha(new File(file));
-    }
-
-    public static String sha(File file) {
-        try {
-            return FileUtil.sha(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String sha256(String file) {
-        return sha256(new File(file));
-    }
-
-    public static String sha256(File file) {
-        try {
-            return FileUtil.sha256(file);
+            org.apache.commons.io.FileUtils.cleanDirectory(dir);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -242,7 +221,11 @@ public class FileUtils {
     }
 
     public static boolean equals(File file1, File file2) {
-        return FileUtil.equals(file1, file2);
+        try {
+            return org.apache.commons.io.FileUtils.contentEqualsIgnoreEOL(file1, file2, Encoding.S_UTF8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static List<File> listFiles(String dir) {

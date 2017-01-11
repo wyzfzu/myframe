@@ -9,8 +9,6 @@ import com.myframe.dao.orm.GenericDao;
  */
 public interface MyBatisGenericDao<T> extends GenericDao<T> {
 
-    public void setMyBatisDao(MyBatisDao myBatisDao);
-
     public MyBatisDao getMyBatisDao();
 
 }

@@ -43,8 +43,8 @@ public class DbUtils {
     static {
         typeMap.put("BIGINT", "Long");
         typeMap.put("INTEGER", "Integer");
-        typeMap.put("TINYINT", "Short");
-        typeMap.put("BIT", "Short");
+        typeMap.put("TINYINT", "Integer");
+        typeMap.put("BIT", "Integer");
         typeMap.put("SMALLINT", "Integer");
         typeMap.put("FLOAT", "Float");
         typeMap.put("DOUBLE", "Double");

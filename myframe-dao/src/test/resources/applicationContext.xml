@@ -19,26 +19,25 @@
     <!-- 定义使用C3P0连接池的数据源 -->
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
         <!-- 指定连接数据库的JDBC驱动 -->
-        <property name="driverClassName">
-            <value>com.mysql.jdbc.Driver</value>
-        </property>
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
         <!-- 连接数据库所用的URL -->
         <property name="url">
             <value>jdbc:mysql://localhost:3307/wuyuzhen?useUnicode=true&amp;characterEncoding=UTF8&amp;connectTimeout=5000&amp;socketTimeout=10000</value>
         </property>
         <!-- 连接数据库的用户名 -->
-        <property name="username">
-            <value>root</value>
-        </property>
+        <property name="username" value="root" />
         <!-- 连接数据库的密码 -->
-        <property name="password">
-            <value>root</value>
-        </property>
+        <property name="password" value="root" />
     </bean>
 
     <bean id="sqlSessionFactoryBuilder" class="com.myframe.dao.orm.mybatis.SqlSessionBuilderFactoryExtend">
         <property name="dataSource" ref="dataSource" />
-        <property name="tablePrefix" value="t_" />
+        <property name="tablePrefixes">
+            <list>
+                <value>t_</value>
+                <value>ia_api_</value>
+            </list>
+        </property>
         <property name="pojoPackages">
             <set>
                 <value>com.myframe.pojo</value>
@@ -60,11 +59,6 @@
     </bean>
 
     <bean id="myBatisDao" class="com.myframe.dao.orm.mybatis.impl.MyBatisSpringDaoImpl">
-        <property name="sqlSessionTemplate" ref="sqlSessionTemplate" />
-    </bean>
-
-    <bean id="genericDao" class="com.myframe.dao.orm.mybatis.impl.MyBatisGenericDaoImpl">
-        <property name="myBatisDao" ref="myBatisDao" />
     </bean>
 
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">

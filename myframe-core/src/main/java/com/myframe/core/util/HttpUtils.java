@@ -2,13 +2,19 @@
 package com.myframe.core.util;
 
 import com.google.common.base.Preconditions;
-import org.apache.http.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -63,6 +69,10 @@ public final class HttpUtils {
 
     public static String post(final String uri, final Map<String, String> params) {
          return doPost(getClient(), uri, params);
+    }
+
+    public static String postJson(final String uri, String param) {
+        return doPost(getClient(), uri, param);
     }
 
     ///////////////////////////////// 私有方法 ////////////////////////////
@@ -158,17 +168,25 @@ public final class HttpUtils {
 	}
 
 	private static String doPost(HttpClient client, final String uri, Map<String, String> params) {
+        return doPost(client, uri, wrapParams(params));
+    }
+
+    private static String doPost(HttpClient client, final String uri, String param) {
+        return doPost(client, uri, new StringEntity(param, ContentType.APPLICATION_JSON));
+    }
+
+    private static String doPost(HttpClient client, final String uri, HttpEntity entity) {
         HttpPost post = new HttpPost(uri);
         try {
-			post.setEntity(wrapParams(params));
-			return getText(client.execute(post));
-		} catch (ClientProtocolException e) {
-			logger.error(e.getMessage(), e);
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			throw new RuntimeException(e);
-		} finally {
+            post.setEntity(entity);
+            return getText(client.execute(post));
+        } catch (ClientProtocolException e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        } finally {
             post.releaseConnection();
         }
     }

@@ -12,7 +12,9 @@ public class Column {
     private String javaType;
     private String firstUpperProperty;
     private String remark;
-    private boolean isPk;
+    private boolean isPk = false;
+    private boolean queryExclude = false;
+    private boolean updateExclude = false;
 
     public String getName() {
         return name;
@@ -68,5 +70,21 @@ public class Column {
 
     public void setPk(boolean isPk) {
         this.isPk = isPk;
+    }
+
+    public boolean isQueryExclude() {
+        return queryExclude;
+    }
+
+    public void setQueryExclude(boolean queryExclude) {
+        this.queryExclude = queryExclude;
+    }
+
+    public boolean isUpdateExclude() {
+        return updateExclude;
+    }
+
+    public void setUpdateExclude(boolean updateExclude) {
+        this.updateExclude = updateExclude;
     }
 }

@@ -2,14 +2,15 @@ package com.myframe.core.util;
 
 import com.google.common.base.Optional;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.formula.eval.ErrorEval;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.OutputStream;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 
@@ -20,35 +21,20 @@ import java.util.List;
  */
 public final class ExcelUtils {
 
-    public static String getCellValue(Row r, int c) {
-        Cell cell = r.getCell(c);
-        if (cell == null) {
-            return "";
-        }
-        switch (cell.getCellType()) {
-            case Cell.CELL_TYPE_BLANK:
-                return "";
-            case Cell.CELL_TYPE_STRING:
-                return cell.getRichStringCellValue().getString();
-            case Cell.CELL_TYPE_NUMERIC:
-                return String.valueOf(Double.valueOf(cell.getNumericCellValue()).intValue()).trim();
-            case Cell.CELL_TYPE_BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue()).trim();
-            case Cell.CELL_TYPE_FORMULA:
-                return cell.getCellFormula();
-            case Cell.CELL_TYPE_ERROR:
-                return ErrorEval.getText(cell.getErrorCellValue());
-            default:
-                return "";
-        }
-    }
-
     public static <T> Workbook export(final List<T> datas, List<Pair<String, String>> valueDescs) {
         return export(datas, valueDescs, null);
     }
 
+    public static <T> Workbook export(final List<T> datas, List<Pair<String, String>> valueDescs, OutputStream os) {
+        return export(datas, valueDescs, os, false);
+    }
+
+    public static <T> Workbook exportOld(final List<T> datas, List<Pair<String, String>> valueDescs) {
+        return exportOld(datas, valueDescs, null);
+    }
+
     /**
-     * 导出数据到excel。
+     * 导出数据到excel, xls格式。
      *
      * @param datas 要导出的数据。
      * @param valueDescs 字段和描述键值对。
@@ -56,7 +42,20 @@ public final class ExcelUtils {
      * @param <T> 类类型
      * @return 工作簿对象
      */
-    public static <T> Workbook export(final List<T> datas, List<Pair<String, String>> valueDescs, OutputStream os) {
+    public static <T> Workbook exportOld(final List<T> datas, List<Pair<String, String>> valueDescs, OutputStream os) {
+        return export(datas, valueDescs, os, true);
+    }
+
+    /**
+     * 导出数据到excel, xlsx格式。
+     *
+     * @param datas 要导出的数据。
+     * @param valueDescs 字段和描述键值对。
+     * @param os 输出流。
+     * @param <T> 类类型
+     * @return 工作簿对象
+     */
+    public static <T> Workbook export(final List<T> datas, List<Pair<String, String>> valueDescs, OutputStream os, boolean old) {
         if (CollectUtils.isEmpty(datas)) {
             throw new RuntimeException("导出数据不能为空！");
         }
@@ -64,7 +63,12 @@ public final class ExcelUtils {
             throw new RuntimeException("导出字段和描述映射不能为空！");
         }
         Class<?> classType = null;
-        Workbook workbook = new HSSFWorkbook();
+        Workbook workbook;
+        if (old) {
+            workbook = new HSSFWorkbook();
+        } else {
+            workbook = new XSSFWorkbook();
+        }
         Sheet sheet = workbook.createSheet();
 
         // 生成头行
@@ -74,7 +78,7 @@ public final class ExcelUtils {
             Cell cell = header.createCell(i);
             String fieldDesc = entry.getValue();
             cell.setCellValue(fieldDesc);
-            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellType(CellType.STRING);
             i++;
         }
 
@@ -94,18 +98,18 @@ public final class ExcelUtils {
                     cell.setCellValue("");
                     continue;
                 }
-                Optional<Field> field = ReflectUtils.getAccessibleField(data, fieldName);
+                Optional<Method> field = ReflectUtils.getAccessibleMethod(data, "set" + StringUtils.capitalize(fieldName));
                 if (!field.isPresent()) {
-                    continue;
-                }
-                String fieldTypeName = field.get().getType().getSimpleName().toUpperCase();
-                cell.setCellType(Cell.CELL_TYPE_STRING);
-                if ("BOOLEAN".equals(fieldTypeName)) {
                     cell.setCellValue(cellValue.toString());
-                } else if ("DATE".equals(fieldTypeName)) {
-                    cell.setCellValue(DateUtils.formatDateTime((Date) cellValue));
                 } else {
-                    cell.setCellValue(cellValue.toString());
+                    Class<?> returnType = field.get().getReturnType();
+                    if (returnType.equals(Boolean.class)) {
+                        cell.setCellValue(cellValue.toString());
+                    } else if (returnType.equals(Date.class)) {
+                        cell.setCellValue(DateUtils.formatDateTime((Date) cellValue));
+                    } else {
+                        cell.setCellValue(cellValue.toString());
+                    }
                 }
             }
         }

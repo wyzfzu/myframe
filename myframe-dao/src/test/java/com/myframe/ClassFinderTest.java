@@ -2,6 +2,7 @@
 // All rights reserved
 package com.myframe;
 
+import com.myframe.core.util.DateUtils;
 import org.junit.Test;
 
 import java.io.File;
@@ -184,4 +185,13 @@ public class ClassFinderTest {
             }
         }
     }
+
+    @Test
+    public void testTime() {
+        long timeStart = DateUtils.parseDateTime("2016-12-08 00:00:00").getTime();
+        long timeEnd = DateUtils.parseDateTime("2017-01-10 00:00:00").getTime();
+
+        System.out.println(timeStart + ", " + timeEnd);
+    }
+
 }

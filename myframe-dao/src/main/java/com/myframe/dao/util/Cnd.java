@@ -232,9 +232,7 @@ public class Cnd {
 
     public Cnd includes(Collection<String> fields) {
         if (CollectUtils.isNotEmpty(fields)) {
-            for (String field : fields) {
-                includeFields.add(StringUtils.fromCamelCase(field, '_').toLowerCase());
-            }
+            fields.forEach(field -> includeFields.add(StringUtils.fromCamelCase(field, '_').toLowerCase()));
         }
         return this;
     }
@@ -248,9 +246,7 @@ public class Cnd {
 
     public Cnd excludes(Collection<String> fields) {
         if (CollectUtils.isNotEmpty(fields)) {
-            for (String field : fields) {
-                excludeFields.add(StringUtils.fromCamelCase(field, '_').toLowerCase());
-            }
+            fields.forEach(field -> excludeFields.add(StringUtils.fromCamelCase(field, '_').toLowerCase()));
         }
         return this;
     }

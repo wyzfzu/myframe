@@ -14,37 +14,37 @@ import java.util.List;
  */
 public interface GenericDao<T> {
 
-    public T get(Serializable id);
+    T get(Serializable id);
 
-    public T get(Cnd cnd);
+    T get(Cnd cnd);
+    
+    List<T> getAll();
 
-    public List<T> getAll();
+    List<T> getList(Cnd cnd);
 
-    public List<T> getList(Cnd cnd);
+    List<T> getPageList(Cnd cnd, int pageNo, int pageSize);
 
-    public List<T> getPageList(Cnd cnd, int pageNo, int pageSize);
+    List<T> getPageList(Cnd cnd, Pageable<T> page);
 
-    public List<T> getPageList(Cnd cnd, Pageable<T> page);
+    Pageable<T> getPage(Cnd cnd, int pageNo, int pageSize);
 
-    public Pageable<T> getPage(Cnd cnd, int pageNo, int pageSize);
+    Pageable<T> getPage(Cnd cnd, Pageable<T> page);
 
-    public Pageable<T> getPage(Cnd cnd, Pageable<T> page);
+    int update(T obj);
 
-    public int update(T obj);
+    int updateByChain(UpdateChain chain);
 
-    public int updateByChain(UpdateChain chain);
+    void updateList(List<T> objs);
 
-    public void updateList(List<T> objs);
+    int delete(Serializable id);
 
-    public int delete(Serializable id);
+    int delete(Cnd cnd);
 
-    public int delete(Cnd cnd);
+    int insert(T obj);
 
-    public int insert(T obj);
+    void insertList(List<T> objs);
 
-    public void insertList(List<T> objs);
+    Integer count();
 
-    public Integer count();
-
-    public Integer count(Cnd cnd);
+    Integer count(Cnd cnd);
 }

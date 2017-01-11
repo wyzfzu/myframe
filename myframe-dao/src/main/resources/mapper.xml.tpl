@@ -26,6 +26,7 @@
     </resultMap>
 
     <sql id="FilterColumnList">
+        <trim prefix="" suffixOverrides=",">
         <choose>
             <when test="includeFields != null and includeFields.size() > 0">
                 <foreach item="field" collection="includeFields" open="" close="" separator=",">
@@ -40,9 +41,10 @@
                 </foreach>
             </when>
             <otherwise>
-            <% for (col in table.columns) { %>${col.name}${colLP.last ? '' : ','}<% } %>
+            <% for (col in table.columns) { if (col.queryExclude) { continue; }%>${col.name},<% } %>
             </otherwise>
         </choose>
+        </trim>
     </sql>
 
     <sql id="ColumnList">
@@ -123,10 +125,11 @@
 
     <select id="__selectByIdInner" resultMap="${resultMap}" parameterType="${pkJavaType}">
         select <include refid="ColumnList" /> from ${table.tableName}
-        where 1 = 1
+        <trim prefix="where" prefixOverrides="and|or">
         <% for (col in table.pkColumns) { %>
             and ${col.name} = #{${col.property}}
         <% } %>
+        </trim>
     </select>
 
     <select id="__selectOneInner" resultMap="${resultMap}" parameterType="${cndType}">
@@ -134,7 +137,7 @@
         <include refid="WhereClause" />
     </select>
 
-    <insert id="__insertInner" parameterType="${table.className}" <% if (table.autoIncrement) { %>useGeneratedKeys="true" keyProperty="${table.pkColumns[0].property}"<%}%>>
+    <insert id="__insertInner" parameterType="${table.className}" <% if (table.autoIncrement) { %>useGeneratedKeys="true" keyColumn="${table.pkColumns[0].name}" keyProperty="${table.pkColumns[0].property}"<%}%>>
         insert into ${table.tableName} (
         <%
             for (col in table.columns) {
@@ -156,19 +159,22 @@
         )
     </insert>
     <update id="__updateByIdInner" parameterType="${table.className}">
-        update ${table.tableName} set
+        update ${table.tableName}
+        <trim prefix="set" suffixOverrides=",">
         <%
             for (col in table.columns) {
-                if (col.pk) {
+                if (col.pk || col.updateExclude) {
                     continue;
                 }
         %>
-            ${col.name} = #{${col.property}, jdbcType=${col.jdbcType}}${colLP.last ? '':','}
+            ${col.name} = #{${col.property}, jdbcType=${col.jdbcType}},
         <%  } %>
-        where 1 = 1
-        <% for (col in table.pkColumns) { %>
+        </trim>
+        <trim prefix="where" prefixOverrides="and|or">
+        <% for (col in table.pkColumns) {%>
             and ${col.name} = #{${col.property}}
         <% } %>
+        </trim>
     </update>
 
     <update id="__updateByChainInner" parameterType="com.myframe.dao.util.UpdateChain">
@@ -181,10 +187,11 @@
 
     <delete id="__deleteByIdInner" parameterType="${pkJavaType}">
         delete from ${table.tableName}
-        where 1 = 1
+        <trim prefix="where" prefixOverrides="and|or">
         <% for (col in table.pkColumns) { %>
             and ${col.name} = #{${col.property}}
         <% } %>
+        </trim>
     </delete>
 
     <delete id="__deleteInner" parameterType="${cndType}">

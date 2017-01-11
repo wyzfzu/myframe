@@ -1,6 +1,10 @@
 package com.myframe.core.util;
 
-import org.joda.time.*;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.joda.time.Months;
+import org.joda.time.Weeks;
+import org.joda.time.Years;
 import org.joda.time.format.DateTimeFormat;
 
 import java.util.Date;
@@ -200,7 +204,11 @@ public final class DateUtils {
 	public static String format(Date date, String pattern) {
 		return toDateTime(date).toString(pattern);
 	}
-	
+
+	public static String format(long timeMillis, String pattern) {
+		return new DateTime(timeMillis).toString(pattern);
+	}
+
 	public static String format(String pattern) {
 		if (pattern == null || "".equals(pattern)) {
 			pattern = DATETIME;
@@ -235,19 +243,35 @@ public final class DateUtils {
 	public static String formatDate(Date date) {
 		return format(date, DATE);
 	}
+
+	public static String formatDate(long timeMillis) {
+		return format(timeMillis, DATE);
+	}
 	
 	public static String formatDate2(Date date) {
 		return format(date, DATE2);
 	}
-	
+
+	public static String formatDate2(long timeMillis) {
+		return format(timeMillis, DATE2);
+	}
+
 	public static String formatDateTime(Date date) {
 		return format(date, DATETIME);
 	}
-	
+
+	public static String formatDateTime(long timeMillis) {
+		return format(timeMillis, DATETIME);
+	}
+
 	public static String formatDateTime2(Date date) {
 		return format(date, DATETIME2);
 	}
-	
+
+	public static String formatDateTime2(long timeMillis) {
+		return format(timeMillis, DATETIME2);
+	}
+
 	public static String formatTime(Date date) {
 		return format(date, TIME);
 	}

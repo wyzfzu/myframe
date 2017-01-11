@@ -6,7 +6,11 @@ import com.myframe.dao.orm.mybatis.dialect.MySql5Dialect;
 import com.myframe.dao.orm.mybatis.dialect.OracleDialect;
 import com.myframe.dao.orm.mybatis.dialect.SQLServer2005Dialect;
 import org.apache.ibatis.executor.statement.StatementHandler;
-import org.apache.ibatis.plugin.*;
+import org.apache.ibatis.plugin.Interceptor;
+import org.apache.ibatis.plugin.Intercepts;
+import org.apache.ibatis.plugin.Invocation;
+import org.apache.ibatis.plugin.Plugin;
+import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.session.Configuration;
@@ -24,7 +28,7 @@ import java.util.Properties;
 	@Signature(
 		type = StatementHandler.class,
 		method = "prepare",
-		args = { Connection.class }
+		args = { Connection.class, Integer.class}
 	)
 })
 public class PaginationInterceptor implements Interceptor {

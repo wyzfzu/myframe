@@ -4,8 +4,9 @@ import com.myframe.core.util.Pageable;
 import com.myframe.dao.orm.mybatis.MyBatisDao;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
-import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.mybatis.spring.SqlSessionTemplate;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,14 @@ import java.util.Map;
  *
  * @author wyzfzu (wyzfzu@qq.com)
  */
-public class MyBatisSpringDaoImpl extends SqlSessionDaoSupport implements MyBatisDao {
+public class MyBatisSpringDaoImpl implements MyBatisDao {
+
+	@Resource
+	private SqlSessionTemplate sqlSessionTemplate;
+
+	public SqlSessionTemplate getSqlSession() {
+		return sqlSessionTemplate;
+	}
 
 	public <T> T selectOne(String statement) {
 		return this.<T>selectOne(statement, null);

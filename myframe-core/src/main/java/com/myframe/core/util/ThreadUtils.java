@@ -9,9 +9,9 @@ import java.util.concurrent.TimeUnit;
  */
 public final class ThreadUtils {
 
-    public static void sleep(long milliSecends) {
+    public static void sleep(long milliSeconds) {
         try {
-            TimeUnit.MILLISECONDS.sleep(milliSecends);
+            TimeUnit.MILLISECONDS.sleep(milliSeconds);
         } catch (InterruptedException e) {
             // ignore
         }

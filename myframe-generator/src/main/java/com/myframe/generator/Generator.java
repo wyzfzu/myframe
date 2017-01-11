@@ -1,9 +1,19 @@
 package com.myframe.generator;
 
 import com.google.common.collect.Lists;
-import com.myframe.core.util.*;
+import com.myframe.core.util.FileNameUtils;
+import com.myframe.core.util.FileUtils;
+import com.myframe.core.util.LogUtils;
+import com.myframe.core.util.ResourceUtils;
+import com.myframe.core.util.StringUtils;
 import com.myframe.dao.util.Table;
-import com.myframe.generator.config.*;
+import com.myframe.generator.config.GeneratorConfig;
+import com.myframe.generator.config.JavaDaoConfig;
+import com.myframe.generator.config.JavaModelConfig;
+import com.myframe.generator.config.JavaServiceConfig;
+import com.myframe.generator.config.JdbcConfig;
+import com.myframe.generator.config.SqlMapConfig;
+import com.myframe.generator.config.TableConfig;
 import com.myframe.generator.util.DbUtils;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;

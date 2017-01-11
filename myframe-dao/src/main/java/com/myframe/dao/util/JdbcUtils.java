@@ -8,7 +8,11 @@ import com.google.common.collect.Maps;
 import com.myframe.core.util.StringUtils;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +29,7 @@ public class JdbcUtils {
 	static {
 		typeMap.put("BIGINT", "Long");
 		typeMap.put("INTEGER", "Integer");
-		typeMap.put("TINYINT", "Short");
+		typeMap.put("TINYINT", "Integer");
 		typeMap.put("BIT", "Short");
 		typeMap.put("SMALLINT", "Integer");
 		typeMap.put("FLOAT", "Float");
@@ -139,12 +143,13 @@ public class JdbcUtils {
 		return StringUtils.toCamelCase(column.toLowerCase(), false, '_');
 	}
 
-	public static String getClassName(String tablePrefix, String tableName) {
+	public static String getClassName(List<String> tablePrefixes, String tableName) {
 		tableName = tableName.toLowerCase();
-		tablePrefix = tablePrefix.toLowerCase();
-		if (tableName.startsWith(tablePrefix)) {
-			tableName = StringUtils.substringAfter(tableName, tablePrefix);
-		}
+        for (String tablePrefix : tablePrefixes) {
+            if (tableName.startsWith(tablePrefix)) {
+                tableName = StringUtils.substringAfter(tableName, tablePrefix);
+            }
+        }
 		String[] tns = tableName.split("_");
 		if (tns.length == 1) {
 			return StringUtils.capitalize(tableName);
@@ -158,7 +163,7 @@ public class JdbcUtils {
 		return sb.toString();
 	}
 
-	public static Table getTableInfo(DataSource ds, String tablePrefix, String tableName) {
+	public static Table getTableInfo(DataSource ds, List<String> tablePrefixes, String tableName) {
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -209,7 +214,7 @@ public class JdbcUtils {
 			}
 			prs.close();
 			table.setTableName(tableName);
-			table.setClassName(getClassName(tablePrefix, tableName));
+			table.setClassName(getClassName(tablePrefixes, tableName));
 			table.setRemark("");
 			table.setPkColumns(pks);
 			table.setColumns(columns);
@@ -222,7 +227,7 @@ public class JdbcUtils {
 		}
 	}
 
-	public static List<Table> getTableInfos(DataSource ds, String tablePrefix, String tableNamePattern) {
+	public static List<Table> getTableInfos(DataSource ds, List<String> tablePrefixes, String tableNamePattern) {
 		List<Table> tables = Lists.newArrayList();
 		Connection conn = null;
 		try {
@@ -280,7 +285,7 @@ public class JdbcUtils {
 				}
 				prs.close();
 				table.setTableName(tableName);
-				table.setClassName(getClassName(tablePrefix, tableName));
+				table.setClassName(getClassName(tablePrefixes, tableName));
 				table.setRemark(tableRemark);
 				table.setPkColumns(pks);
 				table.setColumns(columns);

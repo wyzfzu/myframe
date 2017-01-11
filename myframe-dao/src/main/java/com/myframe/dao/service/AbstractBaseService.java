@@ -4,8 +4,8 @@ import com.myframe.core.util.Pageable;
 import com.myframe.dao.orm.GenericDao;
 import com.myframe.dao.util.Cnd;
 import com.myframe.dao.util.UpdateChain;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 
@@ -16,7 +16,7 @@ import java.util.List;
  */
 public abstract class AbstractBaseService<T> implements BaseService<T> {
 
-    @Autowired
+    @Resource
     private GenericDao<T> genericDao;
 
     public GenericDao<T> getDao() {

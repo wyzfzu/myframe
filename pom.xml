@@ -137,15 +137,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <distributionManagement>
-        <repository>
-            <id>meituan-nexus-releases</id>
-            <url>http://maven.sankuai.com/nexus/content/repositories/thirdparty/</url>
-        </repository>
-        <snapshotRepository>
-            <id>meituan-nexus-releases</id>
-            <url>http://maven.sankuai.com/nexus/content/repositories/3rdPartySnapshot/
-            </url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>

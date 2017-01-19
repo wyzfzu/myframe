@@ -1,10 +1,7 @@
 package com.myframe.dao.orm.mybatis.interceptor;
 
-import com.myframe.core.util.StringUtils;
 import com.myframe.dao.orm.mybatis.dialect.Dialect;
 import com.myframe.dao.orm.mybatis.dialect.MySql5Dialect;
-import com.myframe.dao.orm.mybatis.dialect.OracleDialect;
-import com.myframe.dao.orm.mybatis.dialect.SQLServer2005Dialect;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
@@ -13,7 +10,6 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
-import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.RowBounds;
 
 import java.sql.Connection;
@@ -42,30 +38,7 @@ public class PaginationInterceptor implements Interceptor {
 			return invocation.proceed();
 		}
 
-		Configuration config = (Configuration) metaObject.getValue("delegate.configuration");
-
-		String dialectStr = config.getVariables().getProperty("dialect");
-		if (StringUtils.isEmpty(dialectStr)) {
-			throw new RuntimeException("数据库方言没有配置!");
-		}
-
-		Dialect.Type databaseType = Dialect.Type.valueOf(dialectStr.toUpperCase());
-
-		Dialect dialect = null;
-		switch (databaseType) {
-		case MYSQL:
-			dialect = new MySql5Dialect();
-			break;
-		case ORACLE:
-			dialect = new OracleDialect();
-			break;
-		case SQLSERVER2005:
-			dialect = new SQLServer2005Dialect();
-			break;
-		default:
-			dialect = new MySql5Dialect();
-			break;
-		}
+		Dialect dialect = new MySql5Dialect();
 
 		String originalSql = (String) metaObject.getValue("delegate.boundSql.sql");
 		String limitString = dialect.getLimitString(originalSql,

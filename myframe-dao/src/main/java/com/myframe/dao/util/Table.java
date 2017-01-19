@@ -16,6 +16,7 @@ public class Table {
     private List<Column> pkColumns;
     private List<Column> columns;
     private String pkType;
+    private boolean autoIncrement;
 
     public String getTableName() {
         return tableName;
@@ -65,12 +66,11 @@ public class Table {
         this.pkType = pkType;
     }
 
+    public void setAutoIncrement(boolean autoIncrement) {
+        this.autoIncrement = autoIncrement;
+    }
+
     public boolean isAutoIncrement() {
-        if (CollectUtils.isEmpty(pkColumns) || pkColumns.size() > 1) {
-            return false;
-        }
-        Column col = pkColumns.get(0);
-        return col.getJavaType().equals("Integer")
-                    || col.getJavaType().equals("Long");
+        return autoIncrement;
     }
 }

@@ -172,6 +172,7 @@ public class JdbcUtils {
 			List<Column> columns = Lists.newArrayList();
 			ResultSet crs = dma.getColumns(null, null, tableName, null);
 			crs.getMetaData();
+			boolean autoIncrement = false;
 			while (crs.next()) {
 				String columnName = crs.getString("COLUMN_NAME");
 				String jdbcType = JdbcType.forCode(crs.getInt("DATA_TYPE")).name();
@@ -185,9 +186,14 @@ public class JdbcUtils {
 				column.setProperty(getProperty(column.getName()));
 				column.setRemark(remark);
 				column.setFirstUpperProperty(StringUtils.capitalize(column.getProperty()));
+				String ia = crs.getString("IS_AUTOINCREMENT");
+				if (!autoIncrement) {
+					autoIncrement = "YES".equals(ia.toUpperCase());
+				}
 				columns.add(column);
 			}
 			crs.close();
+			table.setAutoIncrement(autoIncrement);
 			ResultSet prs = dma.getPrimaryKeys(null, null, tableName);
 			List<Column> pks = Lists.newArrayList();
 			while (prs.next()) {

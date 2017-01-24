@@ -59,6 +59,8 @@ public class SqlSessionBuilderFactoryExtend extends SqlSessionFactoryBuilder {
                 logger.debug("mapper generated: \n{}", tplStr);
             }
 
+            config.getTypeAliasRegistry().registerAlias(key);
+
             InputStream is = new ByteArrayInputStream(tplStr.getBytes(Charsets.UTF_8));
             XMLMapperBuilder builder = new XMLMapperBuilder(
                     is, config, "_inner_" + table.getClassName() + "Mapper",

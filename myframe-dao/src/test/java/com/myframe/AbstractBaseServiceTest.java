@@ -7,7 +7,7 @@ import com.myframe.core.util.Pageable;
 import com.myframe.dao.util.Cnd;
 import com.myframe.dao.util.UpdateChain;
 import com.myframe.pojo.TestUser;
-import com.myframe.service.TestUserService;
+import com.myframe.generic.service.TestUserService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author wuyuzhen

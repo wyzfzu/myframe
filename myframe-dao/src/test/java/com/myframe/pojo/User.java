@@ -2,6 +2,12 @@
 // All rights reserved
 package com.myframe.pojo;
 
+import com.myframe.dao.util.IdGenerator;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -10,13 +16,17 @@ import java.util.Date;
  * @version 1.0
  * @created 15/8/31 13:28
  **/
+@Table(name = "t_test_user")
 public class User implements Serializable {
+    @GeneratedValue(generator = IdGenerator.JDBC)
+    @Id
     private Long id;
     private String userName;
     private String password;
     private Integer age;
     private Short gender;
     private Date birthday;
+    @Column(updatable = false)
     private Date createTime;
 
     public Long getId() {

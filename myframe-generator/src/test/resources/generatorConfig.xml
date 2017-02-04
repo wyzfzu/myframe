@@ -3,11 +3,11 @@
     <jdbcConfig>
         <driverClass>com.mysql.jdbc.Driver</driverClass>
         <connectionUrl>
-            jdbc:mysql://localhost:3307/wuyuzhen?useUnicode=true&amp;characterEncoding=UTF-8
+            jdbc:mysql://atlasdev.vip.sankuai.com:6002/ia?useUnicode=true&amp;characterEncoding=UTF-8
         </connectionUrl>
-        <userName>root</userName>
-        <password>root</password>
-        <schema>wuyuzhen</schema>
+        <userName>ia</userName>
+        <password>WERVRT</password>
+        <schema>ia</schema>
     </jdbcConfig>
 
     <javaModelConfig>
@@ -16,13 +16,14 @@
     </javaModelConfig>
 
     <javaDaoConfig>
-        <targetPackage>com.myframe.pojo</targetPackage>
+        <targetPackage>com.myframe.mapper</targetPackage>
         <targetDir>/Users/wuyuzhen/generate</targetDir>
         <!--
+            mapper: 通用Mapper实现
             generic: 使用泛型DAO
             spring: 使用spring实现
         -->
-        <mode>generic</mode>
+        <mode>mapper</mode>
     </javaDaoConfig>
 
     <javaServiceConfig>
@@ -79,7 +80,7 @@
         <!-- 需要包含的表 -->
         <includes>
             <!-- 包含全部 -->
-            <include>*</include>
+            <include>lock_door</include>
         </includes>
     </tableConfig>
 </generatorConfig>

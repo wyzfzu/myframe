@@ -1,9 +1,9 @@
 package com.myframe.dao.service;
 
 import com.myframe.core.util.Pageable;
+import com.myframe.dao.util.UpdateChain;
 import com.myframe.dao.orm.GenericDao;
 import com.myframe.dao.util.Cnd;
-import com.myframe.dao.util.UpdateChain;
 
 import javax.annotation.Resource;
 import java.io.Serializable;

@@ -3,10 +3,10 @@ package com.myframe.dao.orm.mybatis.impl;
 import com.myframe.core.util.DefaultPage;
 import com.myframe.core.util.GenericUtils;
 import com.myframe.core.util.Pageable;
+import com.myframe.dao.util.UpdateChain;
 import com.myframe.dao.orm.mybatis.MyBatisDao;
 import com.myframe.dao.orm.mybatis.MyBatisGenericDao;
 import com.myframe.dao.util.Cnd;
-import com.myframe.dao.util.UpdateChain;
 import org.apache.ibatis.session.RowBounds;
 
 import javax.annotation.Resource;

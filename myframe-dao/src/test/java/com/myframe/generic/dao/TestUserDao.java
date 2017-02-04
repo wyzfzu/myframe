@@ -1,4 +1,4 @@
-package com.myframe.dao;
+package com.myframe.generic.dao;
 
 import com.myframe.dao.orm.mybatis.MyBatisGenericDao;
 import com.myframe.pojo.TestUser;

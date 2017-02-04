@@ -9,6 +9,6 @@
 	</settings>
 
 	<mappers>
-        <mapper resource="mapper/TestUserMapper.xml" />
+        <mapper resource="mapper/xml/TestUserMapper.xml" />
 	</mappers>
 </configuration>

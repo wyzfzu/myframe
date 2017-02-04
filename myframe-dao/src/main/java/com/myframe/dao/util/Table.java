@@ -1,7 +1,5 @@
 package com.myframe.dao.util;
 
-import com.myframe.core.util.CollectUtils;
-
 import java.util.List;
 
 /**

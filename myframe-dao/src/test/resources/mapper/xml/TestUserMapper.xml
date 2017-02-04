@@ -4,9 +4,6 @@
 
     <select id="selectList2" resultMap="TestUserResultMap" parameterType="com.myframe.dao.util.Cnd">
         select
-        <if test="distinct">
-            distinct
-        </if>
         <include refid="ColumnList" />
         from t_test_user
         <include refid="WhereClause" />

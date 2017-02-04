@@ -10,10 +10,13 @@ import com.myframe.core.util.CollectUtils;
 import com.myframe.core.util.LogUtils;
 import com.myframe.core.util.StreamUtils;
 import com.myframe.core.util.TemplateUtils;
-import com.myframe.dao.orm.mybatis.interceptor.PaginationInterceptor;
+import com.myframe.dao.orm.annotation.Id;
+import com.myframe.dao.orm.annotation.QueryExclude;
+import com.myframe.dao.orm.annotation.UpdateExclude;
 import com.myframe.dao.util.Column;
 import com.myframe.dao.util.JdbcUtils;
 import com.myframe.dao.util.Table;
+import com.myframe.dao.orm.mybatis.interceptor.PaginationInterceptor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.session.Configuration;
@@ -97,13 +100,13 @@ public class SqlSessionBuilderFactoryExtend extends SqlSessionFactoryBuilder {
         for (Field field : fields) {
             String fieldName = field.getName();
             if (field.isAnnotationPresent(com.myframe.dao.orm.annotation.Column.class)
-                    || field.isAnnotationPresent(com.myframe.dao.orm.annotation.Id.class)) {
+                    || field.isAnnotationPresent(Id.class)) {
                 columns.forEach(column -> {
                     if (fieldName.equals(column.getProperty())) {
-                        if (field.isAnnotationPresent(com.myframe.dao.orm.annotation.QueryExclude.class)) {
+                        if (field.isAnnotationPresent(QueryExclude.class)) {
                             column.setQueryExclude(true);
                         }
-                        if (field.isAnnotationPresent(com.myframe.dao.orm.annotation.UpdateExclude.class)) {
+                        if (field.isAnnotationPresent(UpdateExclude.class)) {
                             column.setUpdateExclude(true);
                         }
                         newColumns.add(column);

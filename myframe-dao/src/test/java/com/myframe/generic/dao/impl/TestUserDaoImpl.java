@@ -1,6 +1,6 @@
-package com.myframe.dao.impl;
+package com.myframe.generic.dao.impl;
 
-import com.myframe.dao.TestUserDao;
+import com.myframe.generic.dao.TestUserDao;
 import com.myframe.dao.orm.mybatis.impl.MyBatisGenericDaoImpl;
 import com.myframe.dao.util.Cnd;
 import com.myframe.pojo.TestUser;

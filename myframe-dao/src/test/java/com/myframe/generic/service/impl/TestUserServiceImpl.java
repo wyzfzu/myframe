@@ -1,9 +1,9 @@
-package com.myframe.service.impl;
+package com.myframe.generic.service.impl;
 
-import com.myframe.dao.TestUserDao;
+import com.myframe.generic.dao.TestUserDao;
 import com.myframe.dao.service.AbstractBaseService;
 import com.myframe.pojo.TestUser;
-import com.myframe.service.TestUserService;
+import com.myframe.generic.service.TestUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

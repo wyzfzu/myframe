@@ -64,7 +64,12 @@ userService.removeById(1L);
 // 根据条件删除记录
 userService.remove(Cnd.whereEQ("id", 1L));
 ```
-### 2. Cnd类
+
+### 2. 支持注解Mapper + SpringBoot
+NOTE: 参考并引用代码: [http://mybatis.tk](http://www.mybatis.tk)
+
+
+### 3. Cnd类
 `Cnd`是查询条件构造类，目前支持`(x and y) and ((a and b) or (c and d))`的条件格式构造。支持的条件有：
 `=`、`<>`、`>`、`>=`、`<`、`<=`、`LIKE`、`NOT LIKE`、`IS NULL`、`IS NOT NULL`、
 `IN`、`NOT IN`、`BETWEEN...AND...`、`NOT BETWEEN...AND...`,另外还支持字段过滤。

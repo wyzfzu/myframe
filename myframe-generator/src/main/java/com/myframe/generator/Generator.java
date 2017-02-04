@@ -44,6 +44,8 @@ public class Generator {
     public static final String SERVICE_TEMPLATE = "/templates/service.java.tpl";
     public static final String SERVICE_IMPL_TEMPLATE = "/templates/serviceImpl.java.tpl";
     public static final String CONFIGURATION_TEMPLATE = "/templates/configuration.xml.tpl";
+    public static final String MAPPER_JAVA_TEMPLATE = "/templates/mapper.java.tpl";
+    public static final String JPA_MODEL_TEMPLATE = "/templates/jpaModel.java.tpl";
 
     private String configFile;
 
@@ -94,8 +96,18 @@ public class Generator {
         t.binding("generateConfig", generatorConfig.getGenerateConfig());
         t.binding("tableConfig", generatorConfig.getTableConfig());
         t.binding("pkg", generatorConfig.getJavaModelConfig().getTargetPackage());
+        String ns;
+        String suffix;
+        if (generatorConfig.getJavaDaoConfig().getMode().equals("mapper")) {
+            ns = generatorConfig.getJavaModelConfig().getTargetPackage() + ".";
+            suffix = "Mapper";
+        } else {
+            ns = "";
+            suffix = "";
+        }
         for (Table tbl : tables) {
             t.binding("table", tbl);
+            t.binding("ns", ns + tbl.getClassName() + suffix);
             String file = FileNameUtils.concat(fullPath, tbl.getClassName() + "Mapper.xml");
             FileUtils.createFile(file);
             FileUtils.write(t.render(), new File(file));
@@ -108,7 +120,14 @@ public class Generator {
         String fullPath = prepareTargetPath(javaModelConfig.getTargetDir(),
                 javaModelConfig.getTargetPackage());
         logger.info("Model路径：{}", fullPath);
-        final Template t = getTemplate(MODEL_TEMPLATE);
+        String mode = generatorConfig.getJavaDaoConfig().getMode();
+        String tpl;
+        if (mode.equals("mapper")) {
+            tpl = JPA_MODEL_TEMPLATE;
+        } else {
+            tpl = MODEL_TEMPLATE;
+        }
+        final Template t = getTemplate(tpl);
         t.binding("pkg", javaModelConfig.getTargetPackage());
         for (Table tbl : tables) {
             t.binding("table", tbl);
@@ -124,15 +143,28 @@ public class Generator {
         String fullPath = prepareTargetPath(javaDaoConfig.getTargetDir(),
                 javaDaoConfig.getTargetPackage());
         logger.info("Dao路径：{}", fullPath);
-        final Template t = getTemplate(DAO_TEMPLATE);
+        String mode = javaDaoConfig.getMode();
+        String tpl;
+        String suffix;
+        if (mode.equals("mapper")) {
+            tpl = MAPPER_JAVA_TEMPLATE;
+            suffix = "Mapper";
+        } else {
+            tpl = DAO_TEMPLATE;
+            suffix = "Dao";
+        }
+        final Template t = getTemplate(tpl);
         t.binding("pkg", javaDaoConfig.getTargetPackage());
         t.binding("daoConfig", javaDaoConfig);
         t.binding("modelConfig", generatorConfig.getJavaModelConfig());
         for (Table tbl : tables) {
             t.binding("table", tbl);
-            String file = FileNameUtils.concat(fullPath, tbl.getClassName() + "Dao.java");
+            String file = FileNameUtils.concat(fullPath, tbl.getClassName() + suffix + ".java");
             FileUtils.createFile(file);
             FileUtils.write(t.render(), new File(file));
+        }
+        if (mode.equals("mapper")) {
+            return ;
         }
 
         final Template implTpl = getTemplate(DAO_IMPL_TEMPLATE);
@@ -231,8 +263,11 @@ public class Generator {
             generateMapper(tables, gc);
             generateModel(tables, imports, gc);
             generateDao(tables, gc);
-            generateService(tables, gc);
-            generateConfiguration(tables, gc);
+            String mode = gc.getJavaDaoConfig().getMode();
+            if (!mode.equals("mapper")) {
+                generateService(tables, gc);
+                generateConfiguration(tables, gc);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

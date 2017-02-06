@@ -40,6 +40,7 @@ public class MapperAutoConfigurationBoot {
         this.context.register(DataSourceConfig.class,
                 MybatisBootMapperScanAutoConfiguration.class,
                 MybatisAutoConfiguration.class,
+                MyBatisMapperScannerConfig.class,
                 PropertyPlaceholderAutoConfiguration.class);
         this.context.refresh();
     }

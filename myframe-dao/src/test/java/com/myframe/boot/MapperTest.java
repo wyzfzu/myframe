@@ -10,7 +10,6 @@ import com.myframe.mapper.UserMapper;
 import com.myframe.pojo.User;
 import org.apache.ibatis.session.RowBounds;
 import org.junit.Assert;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -29,7 +28,6 @@ import java.util.Map;
         "com.myframe.boot",
         "com.myframe.dao.orm.mybatis.springboot"
 })
-@MapperScan(basePackages = "com.myframe.mapper")
 public class MapperTest implements CommandLineRunner {
 
     //@Autowired

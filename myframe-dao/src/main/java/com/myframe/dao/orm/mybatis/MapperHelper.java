@@ -2,8 +2,8 @@
 package com.myframe.dao.orm.mybatis;
 
 import com.google.common.collect.Lists;
-import com.myframe.dao.orm.mybatis.provider.BaseSqlProvider;
 import com.myframe.dao.orm.mybatis.mapper.BaseMapper;
+import com.myframe.dao.orm.mybatis.provider.BaseSqlProvider;
 import com.myframe.dao.orm.mybatis.provider.EmptySqlProvider;
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.InsertProvider;
@@ -200,12 +200,15 @@ public class MapperHelper {
         } else {
             prefix = "";
         }
-        List<MappedStatement> mappedStatements = Lists.newArrayList(configuration.getMappedStatements());
-        mappedStatements.forEach((ms) -> {
-            if (ms.getId().startsWith(prefix)
-                    && isMapperMethod(ms.getId())
-                    && (ms.getSqlSource() instanceof ProviderSqlSource)) {
-                setSqlSource(ms);
+        List<Object> mappedStatements = Lists.newArrayList(configuration.getMappedStatements());
+        mappedStatements.forEach((obj) -> {
+            if (obj instanceof MappedStatement) {
+                MappedStatement ms = (MappedStatement) obj;
+                if (ms.getId().startsWith(prefix)
+                        && isMapperMethod(ms.getId())
+                        && (ms.getSqlSource() instanceof ProviderSqlSource)) {
+                    setSqlSource(ms);
+                }
             }
         });
     }

@@ -10,7 +10,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+<%
+   if (table.autoIncrement) {
+%>
 import com.myframe.dao.util.IdGenerator;
+<%
+  }
+%>
 
 /**
  * ${table.remark}

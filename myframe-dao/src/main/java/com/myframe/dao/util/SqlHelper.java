@@ -377,7 +377,7 @@ public class SqlHelper {
             if (notNull) {
                 sql.append(SqlHelper.getIfNotNull(column, column.getColumn() + ",", notEmpty));
             } else {
-                sql.append(StringUtils.fromCamelCase(column.getColumn(), '_')).append(",");
+                sql.append(column.getColumn()).append(",");
             }
         }
         sql.append("</trim>");

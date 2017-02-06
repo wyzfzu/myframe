@@ -6,10 +6,16 @@ package ${pkg};
     }
 %>
 import java.io.Serializable;
-import com.myframe.dao.orm.annotation.Column;
-import com.myframe.dao.orm.annotation.Id;
-import com.myframe.dao.orm.annotation.Table;
-
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+<%
+   if (table.autoIncrement) {
+%>
+import com.myframe.dao.util.IdGenerator;
+<%
+  }
+%>
 /**
  * ${table.remark}
  */
@@ -30,9 +36,14 @@ public class ${table.className} implements Serializable {
      */
     <% if (column.pk) { %>
     @Id(name="${column.name}")
-    <% } else { %>
-    @Column(name="${column.name}")
-    <% } %>
+    <%
+       if (table.autoIncrement) {
+    %>
+    @GeneratedValue(generator = IdGenerator.JDBC)
+    <%
+       }
+     }
+    %>
     private ${column.javaType} ${column.property};
     <%
         }

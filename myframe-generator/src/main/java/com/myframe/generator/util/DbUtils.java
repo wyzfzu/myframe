@@ -209,6 +209,7 @@ public class DbUtils {
                 ResultSet crs = dma.getColumns(null, schema, tableName, null);
                 crs.getMetaData();
                 Set<String> imports = Sets.newHashSet();
+                boolean autoIncrement = false;
                 while (crs.next()) {
                     String columnName = crs.getString("COLUMN_NAME");
                     String jdbcType = JdbcType.forCode(crs.getInt("DATA_TYPE")).name();
@@ -227,9 +228,14 @@ public class DbUtils {
                     column.setProperty(getProperty(column.getName()));
                     column.setRemark(remark);
                     column.setFirstUpperProperty(StringUtils.capitalize(column.getProperty()));
+                    String ia = crs.getString("IS_AUTOINCREMENT");
+                    if (!autoIncrement) {
+                        autoIncrement = "YES".equals(ia.toUpperCase());
+                    }
                     columns.add(column);
                 }
                 crs.close();
+                table.setAutoIncrement(autoIncrement);
                 nonPrimitiveImport.put(tableName, imports);
                 ResultSet prs = dma.getPrimaryKeys(null, schema, tableName);
                 List<Column> pks = Lists.newArrayList();

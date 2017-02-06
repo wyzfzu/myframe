@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfigurati
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -124,6 +125,27 @@ public class MapperAutoConfigurationBoot {
         userMapper.insert(user);
 
         Assert.assertNotNull(user.getId());
+        List<User> beans = new ArrayList<>();
+        for (int i = 0; i < 10; ++i) {
+            User bean = new User();
+            bean.setId(200L + i);
+            bean.setAge(i + 10);
+            bean.setPassword("123456");
+            bean.setUserName("test_for_insertList" + RandUtils.randInt());
+            bean.setGender((short) 1);
+            bean.setCreateTime(new Date());
+            bean.setBirthday(new Date());
+            beans.add(bean);
+        }
+
+        userMapper.insertList(beans);
+
+        List<User> users = userMapper.getList(Cnd.whereLike("userName", "test_for_insertList%"));
+        Assert.assertEquals(users.size(), 10);
+        for (User bean : users) {
+            Assert.assertNotNull(bean.getId());
+        }
+
     }
 
     @Test

@@ -2,11 +2,11 @@
 // All rights reserved
 package com.myframe.dao.orm.mybatis.provider;
 
-import com.myframe.dao.util.EntityColumn;
-import com.myframe.dao.util.SqlHelper;
 import com.myframe.dao.orm.mybatis.MapperHelper;
+import com.myframe.dao.util.EntityColumn;
 import com.myframe.dao.util.EntityHelper;
 import com.myframe.dao.util.IdGenerator;
+import com.myframe.dao.util.SqlHelper;
 import org.apache.ibatis.mapping.MappedStatement;
 
 import java.util.Set;
@@ -76,6 +76,28 @@ public class InsertSqlProvider extends BaseSqlProvider {
             }
         }
         sql.append("</trim>");
+        return sql.toString();
+    }
+
+    public String insertList(MappedStatement ms) {
+        final Class<?> entityClass = getEntityClass(ms);
+        //开始拼sql
+        StringBuilder sql = new StringBuilder();
+        sql.append(SqlHelper.insertIntoTable(entityClass, tableName(entityClass)));
+        sql.append(SqlHelper.insertColumns(entityClass, false, false, false));
+        sql.append(" VALUES ");
+        sql.append("<foreach collection=\"list\" item=\"record\" separator=\",\" >");
+        sql.append("<trim prefix=\"(\" suffix=\")\" suffixOverrides=\",\">");
+        //获取全部列
+        Set<EntityColumn> columnList = EntityHelper.getColumns(entityClass);
+        //当某个列有主键策略时，不需要考虑他的属性是否为空，因为如果为空，一定会根据主键策略给他生成一个值
+        for (EntityColumn column : columnList) {
+            if (column.isInsertable()) {
+                sql.append(column.getColumnHolder("record")).append(",");
+            }
+        }
+        sql.append("</trim>");
+        sql.append("</foreach>");
         return sql.toString();
     }
 }

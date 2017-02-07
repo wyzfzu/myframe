@@ -6,7 +6,9 @@ import com.google.common.collect.Maps;
 import com.myframe.core.util.RandUtils;
 import com.myframe.dao.util.Cnd;
 import com.myframe.dao.util.UpdateChain;
+import com.myframe.mapper.PriceMapper;
 import com.myframe.mapper.UserMapper;
+import com.myframe.pojo.TestPrice;
 import com.myframe.pojo.User;
 import org.apache.ibatis.session.RowBounds;
 import org.junit.Assert;
@@ -34,6 +36,10 @@ public class MapperTest implements CommandLineRunner {
     // private BaseMapper<User> userMapper; // 无自定义接口可直接使用该方式
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private PriceMapper priceMapper;
+    private static final String dynamicSuffix = "20170207";
+
 
     @Override
     public void run(String... strings) throws Exception {
@@ -42,6 +48,11 @@ public class MapperTest implements CommandLineRunner {
         testInsert();
         testDelete();
         testCustom();
+
+        testPriceGet();
+        testPriceUpdate();
+        testPriceInsert();
+        testPriceDelete();
     }
 
     public static void main(String[] args) throws Exception {
@@ -90,6 +101,17 @@ public class MapperTest implements CommandLineRunner {
         user = userMapper.getById(1L);
         Assert.assertEquals(3, user.getAge().intValue());
         Assert.assertEquals("user_mapperUpdate", user.getUserName());
+
+        user.setGender(null);
+        user.setBirthday(null);
+        user.setPassword(null);
+        user.setAge(null);
+        user.setUserName("user_updateNotNull");
+
+        userMapper.updateNotNullById(user);
+
+        user = userMapper.getById(1L);
+        Assert.assertEquals("user_updateNotNull", user.getUserName());
     }
 
     public void testInsert() {
@@ -126,5 +148,61 @@ public class MapperTest implements CommandLineRunner {
         User user = userMapper.selectOne2(params);
         Assert.assertNotNull(user);
         Assert.assertEquals(user.getUserName(), "user2_modifyList");
+    }
+
+    public void testPriceGet() {
+        TestPrice price = priceMapper.get(Cnd.whereEQ("id", 1L).dynamicSuffix(dynamicSuffix).excludes("createTime"));
+        Assert.assertNotNull(price);
+
+        List<TestPrice> prices = priceMapper.getList(Cnd.whereGT("price", 305)
+                .includes("id", "price")
+                .desc("price")
+                .dynamicSuffix(dynamicSuffix));
+        Assert.assertNotNull(prices);
+        Assert.assertEquals(7, prices.size());
+
+        prices = priceMapper.getPageList(Cnd.where().dynamicSuffix(dynamicSuffix).excludes("createTime"), new RowBounds(1, 10));
+        Assert.assertNotNull(prices);
+        Assert.assertEquals(10, prices.size());
+
+        Integer count = priceMapper.getCount(Cnd.whereEQ("id", 2L).dynamicSuffix(dynamicSuffix));
+        Assert.assertEquals(1, count.intValue());
+    }
+
+    public void testPriceUpdate() {
+        TestPrice price = priceMapper.get(Cnd.whereEQ("id", 1L).dynamicSuffix(dynamicSuffix));
+        Assert.assertNotNull(price);
+
+        price.setPrice(250);
+
+        priceMapper.updateById(price);
+        price = priceMapper.get(Cnd.whereEQ("id", 1L).dynamicSuffix(dynamicSuffix));
+        Assert.assertEquals(250, price.getPrice().intValue());
+
+        priceMapper.updateByChain(UpdateChain.make("price", 298)
+                .where(Cnd.whereEQ("id", 1L).dynamicSuffix(dynamicSuffix)));
+        price = priceMapper.get(Cnd.whereEQ("id", 1L).dynamicSuffix(dynamicSuffix));
+        Assert.assertEquals(298, price.getPrice().intValue());
+    }
+
+    public void testPriceInsert() {
+        TestPrice price = new TestPrice();
+        price.setPrice(288);
+        price.setPriceDate(Integer.parseInt(dynamicSuffix));
+        price.setCreateTime(new Date());
+
+        priceMapper.insert(price);
+
+        Assert.assertNotNull(price.getId());
+        price = priceMapper.get(Cnd.whereEQ("id", price.getId()).dynamicSuffix(dynamicSuffix));
+        Assert.assertEquals(price.getPrice().intValue(), 288);
+    }
+
+    public void testPriceDelete() {
+        priceMapper.delete(Cnd.whereEQ("id", 1L).dynamicSuffix(dynamicSuffix));
+
+        Integer count = priceMapper.getCount(Cnd.whereEQ("id", 1L).dynamicSuffix(dynamicSuffix));
+
+        Assert.assertEquals(count.intValue(), 0);
     }
 }

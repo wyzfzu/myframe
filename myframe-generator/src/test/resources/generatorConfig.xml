@@ -80,7 +80,7 @@
         <!-- 需要包含的表 -->
         <includes>
             <!-- 包含全部 -->
-            <include>lock_door</include>
+            <include>phx_product_inventory</include>
         </includes>
     </tableConfig>
 </generatorConfig>

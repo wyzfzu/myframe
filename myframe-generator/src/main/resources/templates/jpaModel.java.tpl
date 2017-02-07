@@ -35,7 +35,7 @@ public class ${table.className} implements Serializable {
      * ${column.remark}
      */
     <% if (column.pk) { %>
-    @Id(name="${column.name}")
+    @Id
     <%
        if (table.autoIncrement) {
     %>

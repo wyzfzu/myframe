@@ -85,3 +85,31 @@ VALUES
 	(62,'testNameSaveList3','testPasswordList3',26,1,'2017-01-19 11:07:50','2017-01-19 11:07:50'),
 	(63,'testNameSaveList4','testPasswordList4',27,1,'2017-01-19 11:07:50','2017-01-19 11:07:50');
 
+CREATE TABLE t_test_price (
+	id bigint NOT NULL primary key AUTO_INCREMENT,
+	price_date int(11) NOT NULL,
+	price int(11) DEFAULT 0,
+	create_time datetime DEFAULT NULL
+);
+
+CREATE TABLE t_test_price_20170207 (
+	id bigint NOT NULL primary key AUTO_INCREMENT,
+	price_date int(11) NOT NULL,
+	price int(11) DEFAULT 0,
+	create_time datetime DEFAULT NULL
+);
+
+insert into t_test_price_20170207(id, price_date, price, create_time)
+values
+	(1, 20170207, 301, '2017-02-07 11:56:00'),
+	(2, 20170207, 302, '2017-02-07 11:56:00'),
+	(3, 20170207, 303, '2017-02-07 11:56:00'),
+	(4, 20170207, 304, '2017-02-07 11:56:00'),
+	(5, 20170207, 305, '2017-02-07 11:56:00'),
+	(6, 20170207, 306, '2017-02-07 11:56:00'),
+	(7, 20170207, 307, '2017-02-07 11:56:00'),
+	(8, 20170207, 308, '2017-02-07 11:56:00'),
+	(9, 20170207, 309, '2017-02-07 11:56:00'),
+	(10, 20170207, 310, '2017-02-07 11:56:00'),
+	(11, 20170207, 311, '2017-02-07 11:56:00'),
+	(12, 20170207, 312, '2017-02-07 11:56:00');

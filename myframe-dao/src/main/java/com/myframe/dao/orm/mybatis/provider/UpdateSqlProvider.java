@@ -26,6 +26,15 @@ public class UpdateSqlProvider extends BaseSqlProvider {
         return sql.toString();
     }
 
+    public String updateNotNullById(MappedStatement ms) {
+        Class<?> entityClass = getEntityClass(ms);
+        StringBuilder sql = new StringBuilder();
+        sql.append(SqlHelper.updateTable(entityClass, tableName(entityClass)));
+        sql.append(SqlHelper.updateSetColumns(entityClass, null, true, false));
+        sql.append(SqlHelper.wherePKColumns(entityClass));
+        return sql.toString();
+    }
+
     public String updateByChain(MappedStatement ms) {
         Class<?> entityClass = getEntityClass(ms);
         StringBuilder sql = new StringBuilder();

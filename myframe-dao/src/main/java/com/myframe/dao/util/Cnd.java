@@ -7,7 +7,12 @@ import com.myframe.core.util.CollectUtils;
 import com.myframe.core.util.Pair;
 import com.myframe.core.util.StringUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 查询条件工具类。
@@ -25,6 +30,7 @@ public class Cnd {
     private Cnd parentCnd = null;
     private Set<String> includeFields;
     private Set<String> excludeFields;
+    private String dynamicSuffix = "";
 
     public Cnd() {
         orderCriteria = Lists.newArrayList();
@@ -273,6 +279,25 @@ public class Cnd {
     public Cnd distinct(boolean distinct) {
         this.distinct = distinct;
         return this;
+    }
+
+    public Cnd dynamicSuffix(String dynamicSuffix) {
+        if (StringUtils.isNotEmpty(dynamicSuffix)) {
+            setDynamicSuffix(dynamicSuffix);
+        }
+        return this;
+    }
+
+    public String getDynamicSuffix() {
+        return dynamicSuffix;
+    }
+
+    public boolean isDynamicTable() {
+        return StringUtils.isNoneEmpty(dynamicSuffix);
+    }
+
+    public void setDynamicSuffix(String dynamicSuffix) {
+        this.dynamicSuffix = dynamicSuffix;
     }
 
     public boolean isDistinct() {

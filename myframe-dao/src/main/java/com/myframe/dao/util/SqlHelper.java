@@ -280,6 +280,15 @@ public class SqlHelper {
         return sql.toString();
     }
 
+    public static String getDynamicTableName(Class<?> entityClass, String tableName) {
+        return "<choose>" +
+                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicInterface(_parameter)\">" + tableName + "_${dynamicSuffix}</when>" +
+                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicCnd(_parameter)\">" + tableName + "_${dynamicSuffix}</when>" +
+                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicUpdateChain(_parameter)\">" + tableName + "_${cnd.dynamicSuffix}</when>" +
+                "<otherwise>" + tableName + "</otherwise>" +
+                "</choose>";
+    }
+
     /**
      * from tableName - 动态表名
      *
@@ -290,7 +299,7 @@ public class SqlHelper {
     public static String fromTable(Class<?> entityClass, String defaultTableName) {
         StringBuilder sql = new StringBuilder();
         sql.append(" FROM ");
-        sql.append(defaultTableName);
+        sql.append(getDynamicTableName(entityClass, defaultTableName));
         sql.append(" ");
         return sql.toString();
     }
@@ -317,7 +326,7 @@ public class SqlHelper {
     public static String updateTable(Class<?> entityClass, String defaultTableName, String entityName) {
         StringBuilder sql = new StringBuilder();
         sql.append("UPDATE ");
-        sql.append(defaultTableName);
+        sql.append(getDynamicTableName(entityClass, defaultTableName));
         sql.append(" ");
         return sql.toString();
     }
@@ -332,7 +341,7 @@ public class SqlHelper {
     public static String deleteFromTable(Class<?> entityClass, String defaultTableName) {
         StringBuilder sql = new StringBuilder();
         sql.append("DELETE FROM ");
-        sql.append(defaultTableName);
+        sql.append(getDynamicTableName(entityClass, defaultTableName));
         sql.append(" ");
         return sql.toString();
     }
@@ -347,7 +356,7 @@ public class SqlHelper {
     public static String insertIntoTable(Class<?> entityClass, String defaultTableName) {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO ");
-        sql.append(defaultTableName);
+        sql.append(getDynamicTableName(entityClass, defaultTableName));
         sql.append(" ");
         return sql.toString();
     }

@@ -3,11 +3,11 @@
     <jdbcConfig>
         <driverClass>com.mysql.jdbc.Driver</driverClass>
         <connectionUrl>
-            jdbc:mysql://atlasdev.vip.sankuai.com:6002/ia?useUnicode=true&amp;characterEncoding=UTF-8
+            jdbc:mysql://localhost:3307/wuyuzhen?useUnicode=true&amp;characterEncoding=UTF-8
         </connectionUrl>
-        <userName>ia</userName>
-        <password>WERVRT</password>
-        <schema>ia</schema>
+        <userName>root</userName>
+        <password>root</password>
+        <schema>wuyuzhen</schema>
     </jdbcConfig>
 
     <javaModelConfig>
@@ -58,7 +58,7 @@
 
     <tableConfig>
         <tablePattern>%</tablePattern>
-        <!-- 需要去除的表名前缀 -->
+        <!-- 需要去除的表名前缀, 长前缀需要拆成多个 -->
         <trimPrefix>t_,tb_,tbl_,v_</trimPrefix>
         <!-- 主键自增（目前只支持自增方式） -->
         <autoIncrement>true</autoIncrement>
@@ -80,7 +80,7 @@
         <!-- 需要包含的表 -->
         <includes>
             <!-- 包含全部 -->
-            <include>phx_product_inventory</include>
+            <include>t_test_user</include>
         </includes>
     </tableConfig>
 </generatorConfig>

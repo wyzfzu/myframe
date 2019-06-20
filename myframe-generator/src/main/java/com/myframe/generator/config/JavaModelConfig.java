@@ -10,6 +10,7 @@ import java.io.Serializable;
 public class JavaModelConfig implements Serializable {
     private String targetPackage;
     private String targetDir;
+    private String templateFilePath;
 
     public String getTargetPackage() {
         return targetPackage;
@@ -25,5 +26,13 @@ public class JavaModelConfig implements Serializable {
 
     public void setTargetDir(String targetDir) {
         this.targetDir = targetDir;
+    }
+
+    public String getTemplateFilePath() {
+        return templateFilePath;
+    }
+
+    public void setTemplateFilePath(String templateFilePath) {
+        this.templateFilePath = templateFilePath;
     }
 }

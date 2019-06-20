@@ -1,30 +1,7 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2014-2016 abel533@gmail.com
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 
 package com.myframe.dao.util;
 
-import com.myframe.core.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Set;
 
@@ -33,6 +10,15 @@ import java.util.Set;
  *
  */
 public class SqlHelper {
+
+    public static final String ORDER_BY = orderBy();
+    public static final String GROUP_BY = groupBy();
+    public static final String AGGREGATION = agg();
+    public static final String SELECT_COUNT_CLAUSE = selectCount();
+    public static final String WHERE_CLAUSE = whereClause();
+    public static final String HAVING_CLAUSE = having();
+    public static final String UPDATE_CHAIN = updateChain();
+    public static final String SQL_PREFIX = "";
 
     /**
      * <bind name="pattern" value="'%' + _parameter.getTitle() + '%'" />
@@ -194,7 +180,11 @@ public class SqlHelper {
         StringBuilder cols = new StringBuilder(100);
         StringBuilder commaCols = new StringBuilder(100);
         for (EntityColumn entityColumn : columnList) {
-            cols.append(entityColumn.getColumn()).append(',');
+            cols.append(entityColumn.getColumn());
+            if (!entityColumn.isColumnPropertySame()) {
+                cols.append(" AS ").append(entityColumn.getProperty());
+            }
+            cols.append(',');
             commaCols.append("'").append(entityColumn.getColumn()).append("',");
         }
         sql.append("<trim prefix=\"\" suffixOverrides=\",\">\n")
@@ -238,6 +228,7 @@ public class SqlHelper {
     public static String selectFilterColumns(Class<?> entityClass) {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT ");
+        sql.append("<if test=\"distinct\">DISTINCT</if>");
         sql.append(getFilterColumns(entityClass));
         sql.append(" ");
         return sql.toString();
@@ -261,6 +252,12 @@ public class SqlHelper {
         return sql.toString();
     }
 
+    public static String selectCount() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT COUNT(1) ");
+        return sql.toString();
+    }
+
     /**
      * select case when count(x) > 0 then 1 else 0 end
      *
@@ -280,12 +277,20 @@ public class SqlHelper {
         return sql.toString();
     }
 
+    public static String selectAggregation() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT ");
+        sql.append(AGGREGATION);
+
+        return sql.toString();
+    }
+
     public static String getDynamicTableName(Class<?> entityClass, String tableName) {
-        return "<choose>" +
-                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicInterface(_parameter)\">" + tableName + "_${dynamicSuffix}</when>" +
-                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicCnd(_parameter)\">" + tableName + "_${dynamicSuffix}</when>" +
-                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicUpdateChain(_parameter)\">" + tableName + "_${cnd.dynamicSuffix}</when>" +
-                "<otherwise>" + tableName + "</otherwise>" +
+        return "<choose>\n" +
+                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicInterface(_parameter) and dynamicTableSuffix != null and dynamicTableSuffix != ''\">" + tableName + "${dynamicSuffixSeparator}${dynamicTableSuffix}</when>\n" +
+                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicCnd(_parameter) and dynamicSuffix != null and dynamicSuffix != ''\">" + tableName + "${dynamicSuffixSeparator}${dynamicSuffix}</when>\n" +
+                "<when test=\"@com.myframe.dao.util.OGNL@isDynamicUpdateChain(_parameter) and cnd.dynamicSuffix != null and cnd.dynamicSuffix != ''\">" + tableName + "${cnd.dynamicSuffixSeparator}${cnd.dynamicSuffix}</when>\n" +
+                "<otherwise>`" + tableName + "`</otherwise>\n" +
                 "</choose>";
     }
 
@@ -362,6 +367,21 @@ public class SqlHelper {
     }
 
     /**
+     * replace into tableName - 动态表名
+     *
+     * @param entityClass
+     * @param defaultTableName
+     * @return
+     */
+    public static String replaceIntoTable(Class<?> entityClass, String defaultTableName) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("REPLACE INTO ");
+        sql.append(getDynamicTableName(entityClass, defaultTableName));
+        sql.append(" ");
+        return sql.toString();
+    }
+
+    /**
      * insert table()列
      *
      * @param entityClass
@@ -387,38 +407,6 @@ public class SqlHelper {
                 sql.append(SqlHelper.getIfNotNull(column, column.getColumn() + ",", notEmpty));
             } else {
                 sql.append(column.getColumn()).append(",");
-            }
-        }
-        sql.append("</trim>");
-        return sql.toString();
-    }
-
-    /**
-     * insert-values()列
-     *
-     * @param entityClass
-     * @param skipId      是否从列中忽略id类型
-     * @param notNull     是否判断!=null
-     * @param notEmpty    是否判断String类型!=''
-     * @return
-     */
-    public static String insertValuesColumns(Class<?> entityClass, boolean skipId, boolean notNull, boolean notEmpty) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("<trim prefix=\"VALUES (\" suffix=\")\" suffixOverrides=\",\">");
-        //获取全部列
-        Set<EntityColumn> columnList = EntityHelper.getColumns(entityClass);
-        //当某个列有主键策略时，不需要考虑他的属性是否为空，因为如果为空，一定会根据主键策略给他生成一个值
-        for (EntityColumn column : columnList) {
-            if (!column.isInsertable()) {
-                continue;
-            }
-            if (skipId && column.isId()) {
-                continue;
-            }
-            if (notNull) {
-                sql.append(SqlHelper.getIfNotNull(column, column.getColumnHolder() + ",", notEmpty));
-            } else {
-                sql.append(column.getColumnHolder()).append(",");
             }
         }
         sql.append("</trim>");
@@ -454,9 +442,13 @@ public class SqlHelper {
     }
 
     public static String updateChain() {
-        return "<set><foreach collection=\"params\" item=\"item\" index=\"key\" separator=\",\">\n" +
-                "    \\${key} = #{item}\n" +
-                "</foreach></set>";
+        return "<set>\n" +
+                "<foreach collection=\"opList\" item=\"item\" separator=\",\">\n" +
+                "    \\${item.left} = " +
+                "   <if test='item.middle == \"=\"'>#{item.right}</if>\n" +
+                "   <if test='item.middle != \"=\"'>\\${item.left} \\${item.middle} #{item.right}</if>\n" +
+                "</foreach>\n" +
+                "</set>";
     }
     /**
      * where主键条件
@@ -465,13 +457,23 @@ public class SqlHelper {
      * @return
      */
     public static String wherePKColumns(Class<?> entityClass) {
+        return wherePKColumns(entityClass, "");
+    }
+
+    /**
+     * where主键条件
+     *
+     * @param entityClass
+     * @return
+     */
+    public static String wherePKColumns(Class<?> entityClass, String entityName) {
         StringBuilder sql = new StringBuilder();
         sql.append("<where>");
         //获取全部列
         Set<EntityColumn> columnList = EntityHelper.getPKColumns(entityClass);
         //当某个列有主键策略时，不需要考虑他的属性是否为空，因为如果为空，一定会根据主键策略给他生成一个值
         for (EntityColumn column : columnList) {
-            sql.append(" AND ").append(column.getColumnEqualsHolder());
+            sql.append(" AND ").append(column.getColumnEqualsHolder(entityName));
         }
         sql.append("</where>");
         return sql.toString();
@@ -479,11 +481,9 @@ public class SqlHelper {
 
     /**
      * 获取orderBy
-     *
-     * @param entityClass
      * @return
      */
-    public static String orderBy(Class<?> entityClass) {
+    public static String orderBy() {
         return "<if test=\"orderBy\">\n" +
                 "    order by\n" +
                 "    <foreach collection=\"orders\" item=\"od\" separator=\",\">\n" +
@@ -548,4 +548,55 @@ public class SqlHelper {
                 "</if>";
     }
 
+    public static String getSqlPrefix() {
+        return SQL_PREFIX;
+    }
+
+    public static String groupBy() {
+        return "<if test=\"groupBy\">\n" +
+                "    group by " +
+                "    <foreach collection=\"groupBys\" item=\"gb\" separator=\",\">\n" +
+                "        \\${gb}" +
+                "    </foreach>\n" +
+                "</if>";
+    }
+
+    public static String agg() {
+        return "<if test=\"aggs.size > 0\">" +
+                    " <foreach collection=\"aggs\" item=\"agg\" separator=\",\">" +
+                        "<if test=\"agg.extraFields.size > 0\">" +
+                            "<foreach collection=\"agg.extraFields\" item=\"ef\" separator=\",\">\n" +
+                            "        \\${ef}" +
+                            "</foreach>," +
+                        "</if>" +
+                        "${agg.type.name}(${agg.fieldName})" +
+                        "<if test=\"agg.aliasName != null and agg.aliasName != ''\">" +
+                            " AS ${agg.aliasName} " +
+                        "</if>" +
+                    "</foreach>" +
+                "</if>";
+    }
+
+    public static String having() {
+        return "<if test=\"having != null and having.agg != null and having.criterion != null\">" +
+                    "having ${having.agg.type.name}(${having.agg.fieldName}) " +
+                    "<choose>" +
+                        "<when test=\"having.criterion.nullExp\">" +
+                            "\\${having.criterion.op}\n" +
+                        "</when>\n" +
+                        "<when test=\"having.criterion.betweenExp\">\n" +
+                            "\\${having.criterion.op} #{having.criterion.value} and #{having.criterion.secondValue}\n" +
+                        "</when>\n" +
+                        "<when test=\"having.criterion.inExp\">\n" +
+                            "\\${having.criterion.op}\n" +
+                            "<foreach collection=\"having.criterion.value\" item=\"listItem\" open=\"(\" close=\")\" separator=\",\">\n" +
+                                "#{listItem}\n" +
+                            "</foreach>\n" +
+                        "</when>\n" +
+                        "<otherwise>\n" +
+                            "\\${having.criterion.op} #{having.criterion.value}\n" +
+                        "</otherwise>\n" +
+                    "</choose>\n" +
+                "</if>";
+    }
 }

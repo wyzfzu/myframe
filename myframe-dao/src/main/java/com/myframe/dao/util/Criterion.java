@@ -1,7 +1,5 @@
 package com.myframe.dao.util;
 
-import com.myframe.core.util.StringUtils;
-
 /**
  * 单个查询条件对象。
  *
@@ -31,7 +29,7 @@ class Criterion {
     }
 
     protected Criterion(String field, Op op, Object value, Object secondValue, boolean ignoreCase) {
-        this.field = StringUtils.fromCamelCase(field, '_').toLowerCase();
+        this.field = FieldHelper.wrapFromCamelCase(field);
         this.op = op;
         this.value = value;
         this.secondValue = secondValue;
@@ -39,7 +37,7 @@ class Criterion {
     }
 
     public boolean isBetweenExp() {
-        return op == Op.BETWEEN || op == Op.NOTBETWEEN;
+        return op == Op.BETWEEN || op == Op.NOT_BETWEEN;
     }
 
     public boolean isInExp() {
@@ -47,11 +45,11 @@ class Criterion {
     }
 
     public boolean isNullExp() {
-        return op == Op.ISNULL || op == Op.ISNOTNULL;
+        return op == Op.IS_NULL || op == Op.IS_NOT_NULL;
     }
 
     public boolean isLikeExp() {
-        return op == Op.LIKE || op == Op.NOTLIKE;
+        return op == Op.LIKE || op == Op.NOT_LIKE;
     }
 
     public String getField() {

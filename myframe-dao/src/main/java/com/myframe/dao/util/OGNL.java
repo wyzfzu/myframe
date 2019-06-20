@@ -1,7 +1,7 @@
 
 package com.myframe.dao.util;
 
-import com.myframe.dao.orm.DynamicTableName;
+import com.myframe.dao.dynamic.DynamicTableName;
 
 /**
  * OGNL静态方法

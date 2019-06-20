@@ -6,9 +6,9 @@ package ${pkg};
     }
 %>
 import java.io.Serializable;
-import com.myframe.dao.orm.annotation.Column;
-import com.myframe.dao.orm.annotation.Id;
-import com.myframe.dao.orm.annotation.Table;
+import com.myframe.dao.annotation.Column;
+import com.myframe.dao.annotation.Id;
+import com.myframe.dao.annotation.Table;
 
 /**
  * ${table.remark}

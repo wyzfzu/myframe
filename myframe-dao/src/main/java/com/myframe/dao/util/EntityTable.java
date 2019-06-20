@@ -1,7 +1,7 @@
 
 package com.myframe.dao.util;
 
-import com.myframe.core.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.mapping.ResultFlag;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
@@ -35,7 +35,7 @@ public class EntityTable {
     //resultMap对象
     private ResultMap resultMap;
     //属性和列对应
-    protected Map<String, EntityColumn> propertyMap;
+    private Map<String, EntityColumn> propertyMap;
     //类
     private Class<?> entityClass;
 
@@ -136,7 +136,7 @@ public class EntityTable {
 
     public void setKeyProperties(String keyProperty) {
         if (this.keyProperties == null) {
-            this.keyProperties = new ArrayList<String>();
+            this.keyProperties = new ArrayList<>();
         }
         this.keyProperties.add(keyProperty);
     }
@@ -150,7 +150,7 @@ public class EntityTable {
 
     public void setKeyColumns(String keyColumn) {
         if (this.keyColumns == null) {
-            this.keyColumns = new ArrayList<String>();
+            this.keyColumns = new ArrayList<>();
             this.keyColumns.add(keyColumn);
         } else {
             this.keyColumns.add(keyColumn);

@@ -8,17 +8,10 @@ import java.io.Serializable;
  * @author wyzfzu (wyzfzu@qq.com)
  */
 public class SqlMapConfig implements Serializable {
-    private String targetPackage;
     private String targetDir;
     private String resourceDir;
-
-    public String getTargetPackage() {
-        return targetPackage;
-    }
-
-    public void setTargetPackage(String targetPackage) {
-        this.targetPackage = targetPackage;
-    }
+    private boolean enable = false;
+    private String templateFilePath;
 
     public String getTargetDir() {
         return targetDir;
@@ -34,5 +27,21 @@ public class SqlMapConfig implements Serializable {
 
     public void setResourceDir(String resourceDir) {
         this.resourceDir = resourceDir;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
+
+    public String getTemplateFilePath() {
+        return templateFilePath;
+    }
+
+    public void setTemplateFilePath(String templateFilePath) {
+        this.templateFilePath = templateFilePath;
     }
 }

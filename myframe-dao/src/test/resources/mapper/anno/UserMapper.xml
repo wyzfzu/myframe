@@ -1,16 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.myframe.mapper.UserMapper">
+<mapper namespace="com.sankuai.ia.mapper.test.mapper.UserMapper">
 
     <select id="selectCount2" resultType="java.lang.Integer" parameterType="map">
         select count(1) from t_test_user
         where user_name like #{userName}
     </select>
 
-    <select id="selectOne2" resultType="com.myframe.pojo.User" parameterType="map">
+    <select id="selectOne2" resultType="com.myframe.test.pojo.User" parameterType="map">
         select id as id, user_name as userName, birthday
         from t_test_user
         where id = #{id}
     </select>
+
+    <insert id="insertOne">
+        insert into t_test_user(user_name, password)
+        values(#{userName}, #{password});
+    </insert>
+
+    <insert id="insertOneList">
+        insert into t_test_user (user_name, password,
+        create_time, modify_time)
+        values
+        <foreach item="item" index="index" collection="list" open="" separator="," close="">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                #{item.userName},
+                #{item.password},
+                #{item.createTime},
+                #{item.modifyTime},
+            </trim>
+        </foreach>
+    </insert>
 
 </mapper>

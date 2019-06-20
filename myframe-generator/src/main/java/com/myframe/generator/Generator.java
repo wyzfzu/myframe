@@ -1,31 +1,30 @@
 package com.myframe.generator;
 
 import com.google.common.collect.Lists;
-import com.myframe.core.util.FileNameUtils;
-import com.myframe.core.util.FileUtils;
-import com.myframe.core.util.LogUtils;
-import com.myframe.core.util.ResourceUtils;
-import com.myframe.core.util.StringUtils;
-import com.myframe.dao.util.Table;
 import com.myframe.generator.config.GeneratorConfig;
-import com.myframe.generator.config.JavaDaoConfig;
+import com.myframe.generator.config.JavaMapperConfig;
 import com.myframe.generator.config.JavaModelConfig;
-import com.myframe.generator.config.JavaServiceConfig;
 import com.myframe.generator.config.JdbcConfig;
 import com.myframe.generator.config.SqlMapConfig;
 import com.myframe.generator.config.TableConfig;
 import com.myframe.generator.util.DbUtils;
+import com.myframe.generator.util.Table;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.mapper.ClassAliasingMapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.beetl.core.Configuration;
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.ResourceLoader;
 import org.beetl.core.Template;
 import org.beetl.core.resource.ClasspathResourceLoader;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,16 +35,10 @@ import java.util.Set;
  * @author wyzfzu (wyzfzu@qq.com)
  */
 public class Generator {
-    private static final Logger logger = LogUtils.get();
-    public static final String MAPPER_TEMPLATE = "/templates/mapper.xml.tpl";
-    public static final String MODEL_TEMPLATE = "/templates/model.java.tpl";
-    public static final String DAO_TEMPLATE = "/templates/dao.java.tpl";
-    public static final String DAO_IMPL_TEMPLATE = "/templates/daoImpl.java.tpl";
-    public static final String SERVICE_TEMPLATE = "/templates/service.java.tpl";
-    public static final String SERVICE_IMPL_TEMPLATE = "/templates/serviceImpl.java.tpl";
-    public static final String CONFIGURATION_TEMPLATE = "/templates/configuration.xml.tpl";
+    private static final Logger logger = LoggerFactory.getLogger(Generator.class);
     public static final String MAPPER_JAVA_TEMPLATE = "/templates/mapper.java.tpl";
-    public static final String JPA_MODEL_TEMPLATE = "/templates/jpaModel.java.tpl";
+    public static final String JPA_MODEL_TEMPLATE = "/templates/model.java.tpl";
+    public static final String MAPPER_XML_TEMPLATE = "/templates/mapper.xml.tpl";
 
     private String configFile;
 
@@ -70,48 +63,25 @@ public class Generator {
         return gt.getTemplate(tpl);
     }
 
-    private String prepareTargetPath(String targetDir, String targetPackage) {
-        String baseDir = targetDir.replace('\\', '/');
-        String pkg = targetPackage.replace('.', '/');
-        String fullPath = FileNameUtils.concat(baseDir, pkg);
-        FileUtils.createDir(fullPath);
-        // FileUtils.cleanDir(fullPath);
-
-        return fullPath;
+    private File createFile(String path) {
+        File f = new File(path);
+        if (!f.exists()) {
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                logger.error("create file error: {}", e.getMessage(), e);
+            }
+        }
+        return f;
     }
 
-    private void generateMapper(List<Table> tables, GeneratorConfig generatorConfig) throws Exception {
-        SqlMapConfig sqlMapConfig = generatorConfig.getSqlMapConfig();
-        String fullPath = prepareTargetPath(sqlMapConfig.getTargetDir(),
-                sqlMapConfig.getTargetPackage());
-        if (StringUtils.isNotEmpty(sqlMapConfig.getResourceDir())) {
-            fullPath = FileNameUtils.concat(sqlMapConfig.getTargetDir(), sqlMapConfig.getResourceDir());
-            FileUtils.createDir(fullPath);
-        } else {
-            sqlMapConfig.setResourceDir(sqlMapConfig.getTargetPackage().replace('.', '/'));
-        }
-        logger.info("Mapper路径：{}", fullPath);
+    private String prepareTargetPath(String targetDir, String targetPackage) throws Exception {
+        String baseDir = targetDir.replace('\\', '/');
+        String pkg = targetPackage.replace('.', '/');
+        String fullPath = FilenameUtils.concat(baseDir, pkg);
+        FileUtils.forceMkdir(new File(fullPath));
 
-        final Template t = getTemplate(MAPPER_TEMPLATE);
-        t.binding("generateConfig", generatorConfig.getGenerateConfig());
-        t.binding("tableConfig", generatorConfig.getTableConfig());
-        t.binding("pkg", generatorConfig.getJavaModelConfig().getTargetPackage());
-        String ns;
-        String suffix;
-        if (generatorConfig.getJavaDaoConfig().getMode().equals("mapper")) {
-            ns = generatorConfig.getJavaModelConfig().getTargetPackage() + ".";
-            suffix = "Mapper";
-        } else {
-            ns = "";
-            suffix = "";
-        }
-        for (Table tbl : tables) {
-            t.binding("table", tbl);
-            t.binding("ns", ns + tbl.getClassName() + suffix);
-            String file = FileNameUtils.concat(fullPath, tbl.getClassName() + "Mapper.xml");
-            FileUtils.createFile(file);
-            FileUtils.write(t.render(), new File(file));
-        }
+        return fullPath;
     }
 
     private void generateModel(List<Table> tables, Map<String, Set<String>> imports,
@@ -120,115 +90,60 @@ public class Generator {
         String fullPath = prepareTargetPath(javaModelConfig.getTargetDir(),
                 javaModelConfig.getTargetPackage());
         logger.info("Model路径：{}", fullPath);
-        String mode = generatorConfig.getJavaDaoConfig().getMode();
-        String tpl;
-        if (mode.equals("mapper")) {
-            tpl = JPA_MODEL_TEMPLATE;
-        } else {
-            tpl = MODEL_TEMPLATE;
-        }
+        String templateFilePath = javaModelConfig.getTemplateFilePath();
+        String tpl = (StringUtils.isNotEmpty(templateFilePath)) ? templateFilePath : JPA_MODEL_TEMPLATE;
         final Template t = getTemplate(tpl);
         t.binding("pkg", javaModelConfig.getTargetPackage());
         for (Table tbl : tables) {
             t.binding("table", tbl);
             t.binding("imports", imports.get(tbl.getTableName()));
-            String file = FileNameUtils.concat(fullPath, tbl.getClassName() + ".java");
-            FileUtils.createFile(file);
-            FileUtils.write(t.render(), new File(file));
+            String file = FilenameUtils.concat(fullPath, tbl.getClassName() + ".java");
+            File f = createFile(file);
+            FileUtils.write(f, t.render());
         }
     }
 
-    private void generateDao(List<Table> tables, GeneratorConfig generatorConfig) throws Exception {
-        JavaDaoConfig javaDaoConfig = generatorConfig.getJavaDaoConfig();
-        String fullPath = prepareTargetPath(javaDaoConfig.getTargetDir(),
-                javaDaoConfig.getTargetPackage());
-        logger.info("Dao路径：{}", fullPath);
-        String mode = javaDaoConfig.getMode();
-        String tpl;
-        String suffix;
-        if (mode.equals("mapper")) {
-            tpl = MAPPER_JAVA_TEMPLATE;
-            suffix = "Mapper";
-        } else {
-            tpl = DAO_TEMPLATE;
-            suffix = "Dao";
-        }
+    private void generateMapper(List<Table> tables, GeneratorConfig generatorConfig) throws Exception {
+        JavaMapperConfig javaMapperConfig = generatorConfig.getJavaMapperConfig();
+        String fullPath = prepareTargetPath(javaMapperConfig.getTargetDir(),
+                javaMapperConfig.getTargetPackage());
+        logger.info("Mapper路径：{}", fullPath);
+        String templateFilePath = javaMapperConfig.getTemplateFilePath();
+        String tpl = (StringUtils.isNotEmpty(templateFilePath)) ? templateFilePath : MAPPER_JAVA_TEMPLATE;
+        String suffix = "Mapper";
         final Template t = getTemplate(tpl);
-        t.binding("pkg", javaDaoConfig.getTargetPackage());
-        t.binding("daoConfig", javaDaoConfig);
+        t.binding("pkg", javaMapperConfig.getTargetPackage());
         t.binding("modelConfig", generatorConfig.getJavaModelConfig());
         for (Table tbl : tables) {
             t.binding("table", tbl);
-            String file = FileNameUtils.concat(fullPath, tbl.getClassName() + suffix + ".java");
-            FileUtils.createFile(file);
-            FileUtils.write(t.render(), new File(file));
-        }
-        if (mode.equals("mapper")) {
-            return ;
-        }
-
-        final Template implTpl = getTemplate(DAO_IMPL_TEMPLATE);
-        implTpl.binding("pkg", javaDaoConfig.getTargetPackage());
-        implTpl.binding("daoConfig", javaDaoConfig);
-        implTpl.binding("modelConfig", generatorConfig.getJavaModelConfig());
-        String implPath = FileNameUtils.concat(fullPath, "impl");
-        FileUtils.createDir(implPath);
-
-        for (Table tbl : tables) {
-            implTpl.binding("table", tbl);
-            String file = FileNameUtils.concat(implPath, tbl.getClassName() + "DaoImpl.java");
-            FileUtils.createFile(file);
-            FileUtils.write(implTpl.render(), new File(file));
+            String file = FilenameUtils.concat(fullPath, tbl.getClassName() + suffix + ".java");
+            File f = new File(file);
+            FileUtils.write(f, t.render());
         }
     }
 
-    private void generateService(List<Table> tables, GeneratorConfig generatorConfig) throws Exception {
-        JavaServiceConfig javaServiceConfig = generatorConfig.getJavaServiceConfig();
-        String fullPath = prepareTargetPath(javaServiceConfig.getTargetDir(),
-                javaServiceConfig.getTargetPackage());
-        logger.info("Service路径：{}", fullPath);
-        final Template t = getTemplate(SERVICE_TEMPLATE);
-        t.binding("pkg", javaServiceConfig.getTargetPackage());
-        t.binding("modelConfig", generatorConfig.getJavaModelConfig());
-        for (Table tbl : tables) {
-            t.binding("table", tbl);
-            String file = FileNameUtils.concat(fullPath, tbl.getClassName() + "Service.java");
-            FileUtils.createFile(file);
-            FileUtils.write(t.render(), new File(file));
-        }
-
-        final Template implTpl = getTemplate(SERVICE_IMPL_TEMPLATE);
-        implTpl.binding("pkg", javaServiceConfig.getTargetPackage());
-        implTpl.binding("modelConfig", generatorConfig.getJavaModelConfig());
-        implTpl.binding("daoConfig", generatorConfig.getJavaDaoConfig());
-        implTpl.binding("serviceConfig", javaServiceConfig);
-        String implPath = FileNameUtils.concat(fullPath, "impl");
-        FileUtils.createDir(implPath);
-
-        for (Table tbl : tables) {
-            implTpl.binding("table", tbl);
-            implTpl.binding("tableNameFirstLower", StringUtils.uncapitalize(tbl.getClassName()));
-            String file = FileNameUtils.concat(implPath, tbl.getClassName() + "ServiceImpl.java");
-            FileUtils.createFile(file);
-            FileUtils.write(implTpl.render(), new File(file));
-        }
-    }
-
-    private void generateConfiguration(List<Table> tables, GeneratorConfig generatorConfig) throws Exception {
+    private void generateMapperXml(List<Table> tables, GeneratorConfig generatorConfig) throws Exception {
         SqlMapConfig sqlMapConfig = generatorConfig.getSqlMapConfig();
         String fullPath = prepareTargetPath(sqlMapConfig.getTargetDir(), "");
-        fullPath = fullPath.replace('\\', '/');
-        if (fullPath.endsWith("/")) {
-            fullPath = fullPath.substring(0, fullPath.length() - 1);
+        if (StringUtils.isNotEmpty(sqlMapConfig.getResourceDir())) {
+            fullPath = FilenameUtils.concat(sqlMapConfig.getTargetDir(), sqlMapConfig.getResourceDir());
+            FileUtils.forceMkdir(new File(fullPath));
+        } else {
+            sqlMapConfig.setResourceDir("");
         }
-        logger.info("mybatis-config路径：{}", fullPath);
-        final Template t = getTemplate(CONFIGURATION_TEMPLATE);
-        t.binding("tables", tables);
-        t.binding("modelConfig", generatorConfig.getJavaModelConfig());
-        t.binding("sqlMapConfig", sqlMapConfig);
-        String file = FileNameUtils.concat(fullPath, "mybatis-config.xml");
-        FileUtils.createFile(file);
-        FileUtils.write(t.render(), new File(file));
+        logger.info("Mapper XML路径：{}", fullPath);
+        String templateFilePath = sqlMapConfig.getTemplateFilePath();
+        String tpl = (StringUtils.isNotEmpty(templateFilePath)) ? templateFilePath : MAPPER_XML_TEMPLATE;
+        final Template t = getTemplate(tpl);
+        String ns = generatorConfig.getJavaMapperConfig().getTargetPackage() + ".";
+        String suffix = "Mapper";
+
+        for (Table tbl : tables) {
+            t.binding("ns", ns + tbl.getClassName() + suffix);
+            String file = FilenameUtils.concat(fullPath, tbl.getClassName() + "Mapper.xml");
+            createFile(file);
+            FileUtils.write(new File(file), t.render());
+        }
     }
 
     public void generate() {
@@ -246,7 +161,7 @@ public class Generator {
             xstream.registerLocalConverter(TableConfig.class, "excludes", cc);
 
             GeneratorConfig gc = (GeneratorConfig) xstream.fromXML(
-                    ResourceUtils.getResourceStream(configFile));
+                    Generator.class.getClassLoader().getResourceAsStream(configFile));
 
             util = new DbUtils(gc);
             List<Table> tables = Lists.newArrayList();
@@ -260,13 +175,10 @@ public class Generator {
                 tables.addAll(tbs);
             }
             Map<String, Set<String>> imports = util.getNonPrimitiveImport();
-            generateMapper(tables, gc);
             generateModel(tables, imports, gc);
-            generateDao(tables, gc);
-            String mode = gc.getJavaDaoConfig().getMode();
-            if (!mode.equals("mapper")) {
-                generateService(tables, gc);
-                generateConfiguration(tables, gc);
+            generateMapper(tables, gc);
+            if (gc.getSqlMapConfig() != null && gc.getSqlMapConfig().isEnable()) {
+                generateMapperXml(tables, gc);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

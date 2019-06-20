@@ -4,10 +4,10 @@ package ${pkg}.impl;
     var dao = 'MyBatisDaoImpl';
     if (daoConfig.mode == 'generic') {
         dao = 'MyBatisGenericDaoImpl<' + table.className + '>';
-        print('import com.myframe.dao.orm.mybatis.impl.MyBatisGenericDaoImpl;\n');
+        print('import com.myframe.dao.mybatis.impl.MyBatisGenericDaoImpl;\n');
     } else if (daoConfig.mode == 'spring') {
         dao = 'MyBatisSpringDaoImpl';
-        print('import com.myframe.dao.orm.mybatis.impl.MyBatisSpringDaoImpl;\n');
+        print('import com.myframe.dao.mybatis.impl.MyBatisSpringDaoImpl;\n');
     }
 %>
 import ${modelConfig.targetPackage}.${table.className};

@@ -26,14 +26,15 @@ import java.util.Set;
  */
 public class FieldHelper {
 
+    private static final char DEFAULT_SEPARATOR = '_';
     private static final IFieldHelper fieldHelper;
 
     static {
         String version = System.getProperty("java.version");
-        if (version.contains("1.8.")) {
-            fieldHelper = new Jdk8FieldHelper();
+        if (version.contains("1.6.") || version.contains("1.7.")) {
+            fieldHelper = new JdkOldFieldHelper();
         } else {
-            fieldHelper = new Jdk6_7FieldHelper();
+            fieldHelper = new Jdk8FieldHelper();
         }
     }
 
@@ -62,14 +63,13 @@ public class FieldHelper {
      *
      * @param entityClass
      * @return
-     * @throws IntrospectionException
      */
     public static List<EntityField> getAll(Class<?> entityClass) {
         List<EntityField> fields = fieldHelper.getFields(entityClass);
         List<EntityField> properties = fieldHelper.getProperties(entityClass);
         //拼到一起，名字相同的合并
-        List<EntityField> all = new ArrayList<EntityField>();
-        Set<EntityField> usedSet = new HashSet<EntityField>();
+        List<EntityField> all = new ArrayList<>();
+        Set<EntityField> usedSet = new HashSet<>();
         for (EntityField field : fields) {
             for (EntityField property : properties) {
                 if (!usedSet.contains(property) && field.getName().equals(property.getName())) {
@@ -86,6 +86,66 @@ public class FieldHelper {
             }
         }
         return all;
+    }
+
+    public static String wrapFromCamelCase(String input) {
+        return wrapFromCamelCase(input, DEFAULT_SEPARATOR);
+    }
+
+    public static String wrapFromCamelCase(String input, char separator) {
+        return '`' + fromCamelCase(input, separator).toLowerCase() + '`';
+    }
+
+    public static String fromCamelCase(String input) {
+        return fromCamelCase(input, DEFAULT_SEPARATOR);
+    }
+
+    public static String fromCamelCase(String input, char separator) {
+        int length = input.length();
+        StringBuilder result = new StringBuilder(length * 2);
+        int resultLength = 0;
+        boolean prevTranslated = false;
+        for (int i = 0; i < length; i++) {
+            char c = input.charAt(i);
+            if (i > 0 || c != separator) {// skip first starting separator
+                if (Character.isUpperCase(c)) {
+                    if (!prevTranslated && resultLength > 0 && result.charAt(resultLength - 1) != separator) {
+                        result.append(separator);
+                        resultLength++;
+                    }
+                    c = Character.toLowerCase(c);
+                    prevTranslated = true;
+                } else {
+                    prevTranslated = false;
+                }
+                result.append(c);
+                resultLength++;
+            }
+        }
+        return resultLength > 0 ? result.toString() : input;
+    }
+
+    public static String toCamelCase(String input) {
+        return toCamelCase(input, false, DEFAULT_SEPARATOR);
+    }
+
+    public static String toCamelCase(String input, boolean firstCharUppercase, char separator) {
+        int length = input.length();
+        StringBuilder sb = new StringBuilder(length);
+        boolean upperCase = firstCharUppercase;
+
+        for (int i = 0; i < length; i++) {
+            char ch = input.charAt(i);
+            if (ch == separator) {
+                upperCase = true;
+            } else if (upperCase) {
+                sb.append(Character.toUpperCase(ch));
+                upperCase = false;
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -119,13 +179,13 @@ public class FieldHelper {
          * @param entityClass
          * @return
          */
+        @Override
         public List<EntityField> getFields(Class<?> entityClass) {
-            List<EntityField> fields = _getFields(entityClass, null, null);
+            List<EntityField> fields = getFields(entityClass, null, 0);
             List<EntityField> properties = getProperties(entityClass);
-            Set<EntityField> usedSet = new HashSet<EntityField>();
             for (EntityField field : fields) {
                 for (EntityField property : properties) {
-                    if (!usedSet.contains(property) && field.getName().equals(property.getName())) {
+                    if (field.getName().equals(property.getName())) {
                         //泛型的情况下通过属性可以得到实际的类型
                         field.setJavaType(property.getJavaType());
                         break;
@@ -143,12 +203,9 @@ public class FieldHelper {
          * @param level
          * @return
          */
-        private List<EntityField> _getFields(Class<?> entityClass, List<EntityField> fieldList, Integer level) {
+        private List<EntityField> getFields(Class<?> entityClass, List<EntityField> fieldList, int level) {
             if (fieldList == null) {
-                fieldList = new ArrayList<EntityField>();
-            }
-            if (level == null) {
-                level = 0;
+                fieldList = new ArrayList<>();
             }
             if (entityClass.equals(Object.class)) {
                 return fieldList;
@@ -158,7 +215,7 @@ public class FieldHelper {
             for (int i = 0; i < fields.length; i++) {
                 Field field = fields[i];
                 //排除静态字段
-                if (!Modifier.isStatic(field.getModifiers())) {
+                if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isTransient(field.getModifiers())) {
                     if (level != 0) {
                         //将父类的字段放在前面
                         fieldList.add(index, new EntityField(field, null));
@@ -174,7 +231,7 @@ public class FieldHelper {
                     && (superClass.isAnnotationPresent(Entity.class)
                     || (!Map.class.isAssignableFrom(superClass)
                     && !Collection.class.isAssignableFrom(superClass)))) {
-                return _getFields(entityClass.getSuperclass(), fieldList, ++level);
+                return getFields(entityClass.getSuperclass(), fieldList, ++level);
             }
             return fieldList;
         }
@@ -185,8 +242,9 @@ public class FieldHelper {
          * @param entityClass
          * @return
          */
+        @Override
         public List<EntityField> getProperties(Class<?> entityClass) {
-            List<EntityField> entityFields = new ArrayList<EntityField>();
+            List<EntityField> entityFields = new ArrayList<>();
             BeanInfo beanInfo = null;
             try {
                 beanInfo = Introspector.getBeanInfo(entityClass);
@@ -195,7 +253,7 @@ public class FieldHelper {
             }
             PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
             for (PropertyDescriptor desc : descriptors) {
-                if (!desc.getName().equals("class")) {
+                if (!"class".equals(desc.getName())) {
                     entityFields.add(new EntityField(null, desc));
                 }
             }
@@ -206,12 +264,12 @@ public class FieldHelper {
     /**
      * 支持jdk6,7
      */
-    static class Jdk6_7FieldHelper implements IFieldHelper {
+    static class JdkOldFieldHelper implements IFieldHelper {
 
         @Override
         public List<EntityField> getFields(Class<?> entityClass) {
-            List<EntityField> fieldList = new ArrayList<EntityField>();
-            _getFields(entityClass, fieldList, _getGenericTypeMap(entityClass), null);
+            List<EntityField> fieldList = new ArrayList<>();
+            getFields(entityClass, fieldList, getGenericTypeMap(entityClass), null);
             return fieldList;
         }
 
@@ -221,9 +279,10 @@ public class FieldHelper {
          * @param entityClass
          * @return
          */
+        @Override
         public List<EntityField> getProperties(Class<?> entityClass) {
-            Map<String, Class<?>> genericMap = _getGenericTypeMap(entityClass);
-            List<EntityField> entityFields = new ArrayList<EntityField>();
+            Map<String, Class<?>> genericMap = getGenericTypeMap(entityClass);
+            List<EntityField> entityFields = new ArrayList<>();
             BeanInfo beanInfo;
             try {
                 beanInfo = Introspector.getBeanInfo(entityClass);
@@ -256,27 +315,30 @@ public class FieldHelper {
          * @param genericMap
          * @param level
          */
-        private void _getFields(Class<?> entityClass, List<EntityField> fieldList, Map<String, Class<?>> genericMap, Integer level) {
+        private void getFields(Class<?> entityClass, List<EntityField> fieldList, Map<String, Class<?>> genericMap, Integer level) {
             if (fieldList == null) {
                 throw new NullPointerException("fieldList参数不能为空!");
-            }
-            if (level == null) {
-                level = 0;
             }
             if (entityClass == Object.class) {
                 return;
             }
+
+            if (level == null) {
+                level = 0;
+            }
+
             Field[] fields = entityClass.getDeclaredFields();
             int index = 0;
             for (Field field : fields) {
                 //忽略static和transient字段#106
                 if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isTransient(field.getModifiers())) {
                     EntityField entityField = new EntityField(field, null);
-                    if (field.getGenericType() != null && field.getGenericType() instanceof TypeVariable) {
-                        if (genericMap == null || !genericMap.containsKey(((TypeVariable) field.getGenericType()).getName())) {
+                    Type genericType = field.getGenericType();
+                    if (genericType != null && genericType instanceof TypeVariable) {
+                        if (genericMap == null || !genericMap.containsKey(((TypeVariable) genericType).getName())) {
                             throw new RuntimeException(entityClass + "字段" + field.getName() + "的泛型类型无法获取!");
                         } else {
-                            entityField.setJavaType(genericMap.get(((TypeVariable) field.getGenericType()).getName()));
+                            entityField.setJavaType(genericMap.get(((TypeVariable) genericType).getName()));
                         }
                     } else {
                         entityField.setJavaType(field.getType());
@@ -299,7 +361,7 @@ public class FieldHelper {
                     || (!Map.class.isAssignableFrom(superClass)
                     && !Collection.class.isAssignableFrom(superClass)))) {
                 level++;
-                _getFields(superClass, fieldList, genericMap, level);
+                getFields(superClass, fieldList, genericMap, level);
             }
         }
 
@@ -308,8 +370,8 @@ public class FieldHelper {
          *
          * @param entityClass
          */
-        private Map<String, Class<?>> _getGenericTypeMap(Class<?> entityClass) {
-            Map<String, Class<?>> genericMap = new HashMap<String, Class<?>>();
+        private Map<String, Class<?>> getGenericTypeMap(Class<?> entityClass) {
+            Map<String, Class<?>> genericMap = new HashMap<>();
             if (entityClass == Object.class) {
                 return genericMap;
             }
@@ -332,7 +394,7 @@ public class FieldHelper {
                         }
                     }
                 }
-                genericMap.putAll(_getGenericTypeMap(superClass));
+                genericMap.putAll(getGenericTypeMap(superClass));
             }
             return genericMap;
         }

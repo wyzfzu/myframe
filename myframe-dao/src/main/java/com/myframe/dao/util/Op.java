@@ -15,11 +15,11 @@ enum Op {
     IN("IN"),
     NIN("NOT IN"),
     LIKE("LIKE"),
-    NOTLIKE("NOT LIKE"),
-    ISNULL("IS NULL"),
-    ISNOTNULL("IS NOT NULL"),
+    NOT_LIKE("NOT LIKE"),
+    IS_NULL("IS NULL"),
+    IS_NOT_NULL("IS NOT NULL"),
     BETWEEN("BETWEEN"),
-    NOTBETWEEN("NOT BETWEEN")
+    NOT_BETWEEN("NOT BETWEEN")
     ;
 
     private String op;

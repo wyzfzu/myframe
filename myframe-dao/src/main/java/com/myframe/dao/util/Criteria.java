@@ -65,12 +65,12 @@ public class Criteria {
     }
 
     public Criteria andIsNull(String field) {
-        addCriterion(field, Op.ISNULL);
+        addCriterion(field, Op.IS_NULL);
         return this;
     }
 
     public Criteria andIsNotNull(String field) {
-        addCriterion(field, Op.ISNOTNULL);
+        addCriterion(field, Op.IS_NOT_NULL);
         return this;
     }
 
@@ -104,12 +104,12 @@ public class Criteria {
         return this;
     }
 
-    public Criteria andIn(String field, List<Object> values) {
+    public Criteria andIn(String field, List<?> values) {
         addCriterion(field, Op.IN, values);
         return this;
     }
 
-    public Criteria andNotIn(String field, List<Object> values) {
+    public Criteria andNotIn(String field, List<?> values) {
         addCriterion(field, Op.NIN, values);
         return this;
     }
@@ -128,7 +128,7 @@ public class Criteria {
     }
 
     public Criteria andNotBetween(String field, Object value1, Object value2) {
-        addCriterion(field, Op.NOTBETWEEN, value1, value2);
+        addCriterion(field, Op.NOT_BETWEEN, value1, value2);
         return this;
     }
 
@@ -151,9 +151,9 @@ public class Criteria {
 
     public Criteria andNotLike(String field, Object value, boolean ignoreCase) {
         if (ignoreCase) {
-            addCriterion(field , Op.NOTLIKE, value, true);
+            addCriterion(field , Op.NOT_LIKE, value, true);
         } else {
-            addCriterion(field, Op.NOTLIKE, value);
+            addCriterion(field, Op.NOT_LIKE, value);
         }
         return this;
     }

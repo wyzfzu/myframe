@@ -3,9 +3,7 @@ package com.myframe.dao.util;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.myframe.core.util.CollectUtils;
-import com.myframe.core.util.Pair;
-import com.myframe.core.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * 查询条件工具类。
@@ -20,6 +19,8 @@ import java.util.Set;
  * @author wyzfzu (wyzfzu@qq.com)
  */
 public class Cnd {
+    private static final String DEFAULT_DYNAMIC_SUFFIX_SEPARATOR = "";
+
     private boolean orderBy;
     private boolean distinct;
     private List<Criteria> orderCriteria;
@@ -31,6 +32,12 @@ public class Cnd {
     private Set<String> includeFields;
     private Set<String> excludeFields;
     private String dynamicSuffix = "";
+    private String dynamicSuffixSeparator = DEFAULT_DYNAMIC_SUFFIX_SEPARATOR;
+    private boolean forceMaster = false;
+    private List<Agg> aggs;
+    private List<String> groupBys;
+    private Having having;
+    private static Supplier<String> dynamicTableNameSupplier;
 
     public Cnd() {
         orderCriteria = Lists.newArrayList();
@@ -40,6 +47,18 @@ public class Cnd {
         orders = Lists.newArrayList();
         includeFields = Sets.newHashSet();
         excludeFields = Sets.newHashSet();
+        groupBys = Lists.newArrayList();
+        aggs = Lists.newArrayList();
+    }
+
+    public static void registerDynamicTableNameSuffix(Supplier<String> supplier) {
+        if (supplier != null) {
+            dynamicTableNameSupplier = supplier;
+        }
+    }
+
+    public static void unregisterDynamicTableNameSuffix() {
+        dynamicTableNameSupplier = null;
     }
 
     public static Cnd where() {
@@ -86,7 +105,7 @@ public class Cnd {
         return where().andIn(field, values);
     }
 
-    public static Cnd whereIn(String field, List<Object> values) {
+    public static Cnd whereIn(String field, List<?> values) {
         return where().andIn(field, values);
     }
 
@@ -94,7 +113,7 @@ public class Cnd {
         return where().andNotIn(field, values);
     }
 
-    public static Cnd whereNotIn(String field, List<Object> values) {
+    public static Cnd whereNotIn(String field, List<?> values) {
         return where().andNotIn(field, values);
     }
 
@@ -115,11 +134,19 @@ public class Cnd {
     }
 
     public static Cnd whereBetween(String field, Object value, Object secondValue) {
-        return where().andNotBetween(field, value, secondValue);
+        return where().andBetween(field, value, secondValue);
     }
 
     public static Cnd whereNotBetween(String field, Object value, Object secondValue) {
         return where().andNotBetween(field, value, secondValue);
+    }
+
+    public static Cnd whereAgg(Agg... agg) {
+        return where().agg(agg);
+    }
+
+    public static Cnd whereAgg(Collection<Agg> aggs) {
+        return where().agg(aggs);
     }
 
     public Cnd and(Cnd cnd) {
@@ -137,7 +164,7 @@ public class Cnd {
     }
 
     public Cnd addExtra(Map<String, Object> params) {
-        if (CollectUtils.isNotEmpty(params)) {
+        if (params != null && !params.isEmpty()) {
             extra.putAll(params);
         }
         return this;
@@ -183,12 +210,12 @@ public class Cnd {
         return this;
     }
 
-    public Cnd andIn(String field, List<Object> values) {
+    public Cnd andIn(String field, List<?> values) {
         cri.andIn(field, values);
         return this;
     }
 
-    public Cnd andNotIn(String field, List<Object> values) {
+    public Cnd andNotIn(String field, List<?> values) {
         cri.andNotIn(field, values);
         return this;
     }
@@ -207,7 +234,7 @@ public class Cnd {
     }
 
     public Cnd andNotBetween(String field, Object value1, Object value2) {
-        cri.andBetween(field, value1, value2);
+        cri.andNotBetween(field, value1, value2);
         return this;
     }
 
@@ -237,8 +264,8 @@ public class Cnd {
     }
 
     public Cnd includes(Collection<String> fields) {
-        if (CollectUtils.isNotEmpty(fields)) {
-            fields.forEach(field -> includeFields.add(StringUtils.fromCamelCase(field, '_').toLowerCase()));
+        if (fields != null && !fields.isEmpty()) {
+            fields.forEach(field -> includeFields.add(FieldHelper.wrapFromCamelCase(field, '_')));
         }
         return this;
     }
@@ -251,22 +278,62 @@ public class Cnd {
     }
 
     public Cnd excludes(Collection<String> fields) {
-        if (CollectUtils.isNotEmpty(fields)) {
-            fields.forEach(field -> excludeFields.add(StringUtils.fromCamelCase(field, '_').toLowerCase()));
+        if (fields != null && !fields.isEmpty()) {
+            fields.forEach(field -> excludeFields.add(FieldHelper.wrapFromCamelCase(field, '_')));
         }
         return this;
     }
 
     public Cnd desc(String field) {
-        return orderBy(field, OrderBy.desc);
+        return orderBy(field, OrderBy.desc, false);
+    }
+
+    /**
+     * 指定降序排序字段
+     *
+     * @param field 字段名
+     * @param keepOrigin false: 字段名不会做驼峰到下划线的转化, true: 会做转化, 主要用于聚合函数的别名
+     * @return
+     */
+    public Cnd desc(String field, boolean keepOrigin) {
+        return orderBy(field, OrderBy.desc, keepOrigin);
     }
 
     public Cnd asc(String field) {
-        return orderBy(field, OrderBy.asc);
+        return orderBy(field, OrderBy.asc, false);
     }
 
-    public Cnd orderBy(String field, OrderBy ob) {
-        String col = StringUtils.fromCamelCase(field, '_').toLowerCase();
+    /**
+     * 指定升序排序字段
+     *
+     * @param field 字段名
+     * @param keepOrigin false: 字段名不会做驼峰到下划线的转化, true: 会做转化, 主要用于聚合函数的别名
+     * @return
+     */
+    public Cnd asc(String field, boolean keepOrigin) {
+        return orderBy(field, OrderBy.asc, keepOrigin);
+    }
+
+    /**
+     * 指定排序字段, 推荐使用{@link Cnd#asc(String)}与{@link Cnd#desc(String)}
+     *
+     * @param field 字段名
+     * @param ob 排序规则
+     * @return
+     */
+    private Cnd orderBy(String field, OrderBy ob) {
+        return orderBy(field, ob, false);
+    }
+
+    /**
+     * 指定排序字段, 推荐使用{@link Cnd#asc(String, boolean)}与{@link Cnd#desc(String, boolean)}
+     *
+     * @param field 字段名
+     * @param ob 排序规则
+     * @return
+     */
+    private Cnd orderBy(String field, OrderBy ob, boolean keepOrigin) {
+        String col = keepOrigin ? field : FieldHelper.wrapFromCamelCase(field, '_');
         orders.add(Pair.create(col, ob.getValue()));
         orderBy = true;
         return this;
@@ -274,6 +341,45 @@ public class Cnd {
 
     public boolean isOrderBy() {
         return orderBy;
+    }
+
+    public Cnd groupBy(String... fields) {
+        if (fields != null && fields.length > 0) {
+            return groupBy(Arrays.asList(fields));
+        }
+
+        return this;
+    }
+
+    public Cnd groupBy(Collection<String> fields) {
+        if (fields == null || fields.isEmpty()) {
+            return this;
+        }
+
+        fields.forEach(field -> groupBys.add(FieldHelper.wrapFromCamelCase(field, '_')));
+
+        return this;
+    }
+
+    public boolean isGroupBy() {
+        return !groupBys.isEmpty();
+    }
+
+    public Cnd having(Having having) {
+        this.having = having;
+        return this;
+    }
+
+    public Cnd agg(Agg... agg) {
+        return agg(Arrays.asList(agg));
+    }
+
+    public Cnd agg(Collection<Agg> aggs) {
+        if (aggs != null && !aggs.isEmpty()) {
+            this.aggs.addAll(aggs);
+        }
+
+        return this;
     }
 
     public Cnd distinct(boolean distinct) {
@@ -288,16 +394,38 @@ public class Cnd {
         return this;
     }
 
+    public Cnd dynamicSuffixSeparator(String dynamicSuffixSeparator) {
+        if (dynamicSuffixSeparator != null) {
+            setDynamicSuffixSeparator(dynamicSuffixSeparator);
+        }
+        return this;
+    }
+
     public String getDynamicSuffix() {
-        return dynamicSuffix;
+        if (StringUtils.isNotEmpty(dynamicSuffix)) {
+            return dynamicSuffix;
+        }
+        if (dynamicTableNameSupplier != null) {
+            dynamicSuffix = dynamicTableNameSupplier.get();
+            return dynamicSuffix;
+        }
+        return null;
+    }
+
+    public String getDynamicSuffixSeparator() {
+        return StringUtils.defaultString(dynamicSuffixSeparator, DEFAULT_DYNAMIC_SUFFIX_SEPARATOR);
     }
 
     public boolean isDynamicTable() {
-        return StringUtils.isNoneEmpty(dynamicSuffix);
+        return StringUtils.isNotEmpty(getDynamicSuffix());
     }
 
     public void setDynamicSuffix(String dynamicSuffix) {
-        this.dynamicSuffix = dynamicSuffix;
+        this.dynamicSuffix = StringUtils.trimToNull(dynamicSuffix);
+    }
+
+    public void setDynamicSuffixSeparator(String dynamicSuffixSeparator) {
+        this.dynamicSuffixSeparator = dynamicSuffixSeparator == null ? DEFAULT_DYNAMIC_SUFFIX_SEPARATOR : dynamicSuffixSeparator;
     }
 
     public boolean isDistinct() {
@@ -325,7 +453,8 @@ public class Cnd {
     }
 
     public void setIncludeFields(Set<String> includeFields) {
-        this.includeFields = includeFields;
+        this.includeFields.clear();
+        includes(includeFields);
     }
 
     public Set<String> getExcludeFields() {
@@ -333,7 +462,16 @@ public class Cnd {
     }
 
     public void setExcludeFields(Set<String> excludeFields) {
-        this.excludeFields = excludeFields;
+        this.excludeFields.clear();
+        excludes(excludeFields);
+    }
+
+    public List<Agg> getAggs() {
+        return aggs;
+    }
+
+    public List<String> getGroupBys() {
+        return groupBys;
     }
 
     private void setParentCnd(Cnd cnd) {
@@ -347,9 +485,24 @@ public class Cnd {
         return this;
     }
 
-    public String toCndString(Cnd cnd) {
+    public String toCndString() {
         StringBuilder sqlBuf = new StringBuilder();
-        List<Criteria> cris = cnd.getOrderCriteria();
+        if (!aggs.isEmpty()) {
+            sqlBuf.append("SELECT ");
+            for (Agg agg : aggs) {
+                    sqlBuf.append(agg.getType().getName())
+                        .append("(").append(agg.getFieldName()).append(")");
+                if (StringUtils.isNotEmpty(agg.getAliasName())) {
+                    sqlBuf.append(" AS ").append(agg.getAliasName());
+                }
+                sqlBuf.append(",");
+            }
+            sqlBuf.deleteCharAt(sqlBuf.length() - 1);
+
+            sqlBuf.append("\nFROM table\nWHERE 1 = 1 ");
+        }
+
+        List<Criteria> cris = this.getOrderCriteria();
         for (Criteria cri : cris) {
             if (!cri.isValid()) {
                 continue;
@@ -387,44 +540,55 @@ public class Cnd {
                 sqlBuf.append(subSql.substring(4)).append(") OR ");
             }
         }
-        if (sqlBuf.length() > 0) {
+        if (sqlBuf.length() > 0 && aggs.isEmpty()) {
             sqlBuf.delete(sqlBuf.length() - 4, sqlBuf.length());
         }
-        if (cnd.getInnerCnd() != null) {
+        if (this.getInnerCnd() != null) {
             sqlBuf.append(" AND (");
-            sqlBuf.append(toCndString(cnd.getInnerCnd()));
+            sqlBuf.append(this.getInnerCnd().toCndString());
             sqlBuf.append(")");
         }
 
-        return sqlBuf.toString();
-    }
-
-    /**
-     * 只用于方便调试。
-     *
-     * @return
-     */
-    public String toCndString() {
-        StringBuilder sqlBuf = new StringBuilder("SELECT ");
-        if (isDistinct()) {
-            sqlBuf.append(" DISTINCT ");
+        if (isGroupBy()) {
+            sqlBuf.append("\nGROUP BY ")
+                    .append(StringUtils.join(groupBys, ','));
         }
-        sqlBuf.append(" * FROM ${TABLE_NAME} WHERE ");
-
-        sqlBuf.append(toCndString(this));
-
-        String sql = sqlBuf.toString();
-        if (sql.endsWith(" OR ")) {
-            sqlBuf.delete(sqlBuf.length() - 4, sqlBuf.length());
-        }
-        if (CollectUtils.isNotEmpty(orders)) {
-            sqlBuf.append(" order by");
-            for (Pair<String, String> od : orders) {
-                sqlBuf.append(" ").append(od.getKey())
-                        .append(" ").append(od.getValue());
+        if (having != null) {
+            Criterion havingCri = having.getCriterion();
+            sqlBuf.append("\nHAVING ")
+                    .append(having.getAgg().getType().getName())
+                    .append("(").append(having.getAgg().getFieldName()).append(") ")
+                    .append(havingCri.getOp().getOp());
+            if (havingCri.isNullExp()) {
+                // 无需
+            } else if (havingCri.isBetweenExp()) {
+                sqlBuf.append(" ")
+                        .append(havingCri.getValue())
+                        .append(" AND ")
+                        .append(havingCri.getSecondValue());
+            } else if (havingCri.isInExp()) {
+                Object val = havingCri.getValue();
+                sqlBuf.append(" (");
+                if (val instanceof Iterator) {
+                    sqlBuf.append(StringUtils.join((Iterator)val, ','));
+                } else if (val instanceof Iterable) {
+                    sqlBuf.append(StringUtils.join((Iterable)val, ','));
+                } else {
+                    sqlBuf.append(StringUtils.join((Object[])val, ','));
+                }
+                sqlBuf.append(")");
+            } else {
+                sqlBuf.append(" ").append(havingCri.getValue());
             }
         }
-        sqlBuf.append("\n").append(getExtra().toString());
+        if (isOrderBy()) {
+            sqlBuf.append("\nORDER BY ");
+            StringBuilder od = new StringBuilder(",");
+            orders.forEach(p -> {
+                od.append(p.getKey()).append(" ").append(p.getValue());
+            });
+            sqlBuf.append(od.substring(1));
+        }
         return sqlBuf.toString();
     }
 }

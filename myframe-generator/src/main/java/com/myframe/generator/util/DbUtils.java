@@ -5,19 +5,19 @@ import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.myframe.core.util.LogUtils;
-import com.myframe.core.util.StringUtils;
-import com.myframe.dao.util.Column;
-import com.myframe.dao.util.Table;
+import com.myframe.dao.util.FieldHelper;
 import com.myframe.generator.config.GeneratorConfig;
 import com.myframe.generator.config.JdbcConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * @author wyzfzu (wyzfzu@qq.com)
  */
 public class DbUtils {
-    private static final Logger logger = LogUtils.get();
+    private static final Logger logger = LoggerFactory.getLogger(DbUtils.class);
     private DataSource ds;
     private GeneratorConfig generatorConfig;
     private Set<String> tablePrefix = Sets.newHashSet();
@@ -39,6 +39,7 @@ public class DbUtils {
     private static final List<Pattern> includePatterns = Lists.newArrayList();
     private static final List<Pattern> excludePatterns = Lists.newArrayList();
     private static final Map<String, String> typeMap = Maps.newHashMap();
+    private static final Pattern ALL_PATTERN = Pattern.compile(".*", Pattern.CASE_INSENSITIVE);
 
     static {
         typeMap.put("BIGINT", "Long");
@@ -90,7 +91,7 @@ public class DbUtils {
         for (String inc : includes) {
             if (inc.equals("*")) {
                 includePatterns.clear();
-                includePatterns.add(Pattern.compile(".*", Pattern.CASE_INSENSITIVE));
+                includePatterns.add(ALL_PATTERN);
                 break;
             }
             includePatterns.add(Pattern.compile(inc, Pattern.CASE_INSENSITIVE));
@@ -99,7 +100,7 @@ public class DbUtils {
         for (String exc : excludes) {
             if (exc.equals("*")) {
                 excludePatterns.clear();
-                excludePatterns.add(Pattern.compile(".*", Pattern.CASE_INSENSITIVE));
+                excludePatterns.add(ALL_PATTERN);
                 break;
             }
             excludePatterns.add(Pattern.compile(exc, Pattern.CASE_INSENSITIVE));
@@ -110,7 +111,7 @@ public class DbUtils {
         this.generatorConfig = generatorConfig;
         initDataSource(this.generatorConfig.getJdbcConfig());
         String prefix = generatorConfig.getTableConfig().getTrimPrefix();
-        tablePrefix.addAll(StringUtils.splitToList(prefix, ','));
+        tablePrefix.addAll(Arrays.asList(StringUtils.split(prefix, ',')));
         initPattern();
     }
 
@@ -125,7 +126,7 @@ public class DbUtils {
     }
 
     private String getProperty(String column) {
-        return StringUtils.toCamelCase(column.toLowerCase(), false, '_');
+        return FieldHelper.toCamelCase(column.toLowerCase(), false, '_');
     }
 
     private String getClassName(String tableName) {

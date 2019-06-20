@@ -10,10 +10,8 @@ import java.io.Serializable;
 public class GeneratorConfig implements Serializable {
     private JdbcConfig jdbcConfig;
     private JavaModelConfig javaModelConfig;
-    private JavaDaoConfig javaDaoConfig;
-    private JavaServiceConfig javaServiceConfig;
+    private JavaMapperConfig javaMapperConfig;
     private SqlMapConfig sqlMapConfig;
-    private GenerateConfig generateConfig;
     private TableConfig tableConfig;
 
     public JdbcConfig getJdbcConfig() {
@@ -32,20 +30,12 @@ public class GeneratorConfig implements Serializable {
         this.javaModelConfig = javaModelConfig;
     }
 
-    public JavaDaoConfig getJavaDaoConfig() {
-        return javaDaoConfig;
+    public JavaMapperConfig getJavaMapperConfig() {
+        return javaMapperConfig;
     }
 
-    public void setJavaDaoConfig(JavaDaoConfig javaDaoConfig) {
-        this.javaDaoConfig = javaDaoConfig;
-    }
-
-    public JavaServiceConfig getJavaServiceConfig() {
-        return javaServiceConfig;
-    }
-
-    public void setJavaServiceConfig(JavaServiceConfig javaServiceConfig) {
-        this.javaServiceConfig = javaServiceConfig;
+    public void setJavaMapperConfig(JavaMapperConfig javaMapperConfig) {
+        this.javaMapperConfig = javaMapperConfig;
     }
 
     public SqlMapConfig getSqlMapConfig() {
@@ -54,14 +44,6 @@ public class GeneratorConfig implements Serializable {
 
     public void setSqlMapConfig(SqlMapConfig sqlMapConfig) {
         this.sqlMapConfig = sqlMapConfig;
-    }
-
-    public GenerateConfig getGenerateConfig() {
-        return generateConfig;
-    }
-
-    public void setGenerateConfig(GenerateConfig generateConfig) {
-        this.generateConfig = generateConfig;
     }
 
     public TableConfig getTableConfig() {

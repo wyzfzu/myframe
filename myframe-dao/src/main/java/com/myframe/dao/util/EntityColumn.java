@@ -1,7 +1,7 @@
 
 package com.myframe.dao.util;
 
-import com.myframe.core.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
@@ -53,7 +53,7 @@ public class EntityColumn {
     }
 
     public String getColumn() {
-        return column;
+        return '`' + column + '`';
     }
 
     public void setColumn(String column) {
@@ -164,7 +164,7 @@ public class EntityColumn {
      * @return
      */
     public String getColumnEqualsHolder(String entityName) {
-        return this.column + " = " + getColumnHolder(entityName);
+        return getColumn() + " = " + getColumnHolder(entityName);
     }
 
     /**
@@ -217,7 +217,7 @@ public class EntityColumn {
      * @return
      */
     public String getColumnHolder(String entityName, String suffix, String separator) {
-        StringBuffer sb = new StringBuffer("#{");
+        StringBuilder sb = new StringBuilder("#{");
         if (StringUtils.isNotEmpty(entityName)) {
             sb.append(entityName);
             sb.append(".");
@@ -243,24 +243,54 @@ public class EntityColumn {
         return sb.toString();
     }
 
+    public boolean isColumnPropertySame() {
+        return column.equals(property);
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         EntityColumn that = (EntityColumn) o;
 
-        if (id != that.id) return false;
-        if (uuid != that.uuid) return false;
-        if (identity != that.identity) return false;
-        if (table != null ? !table.equals(that.table) : that.table != null) return false;
-        if (property != null ? !property.equals(that.property) : that.property != null) return false;
-        if (column != null ? !column.equals(that.column) : that.column != null) return false;
-        if (javaType != null ? !javaType.equals(that.javaType) : that.javaType != null) return false;
-        if (jdbcType != that.jdbcType) return false;
-        if (typeHandler != null ? !typeHandler.equals(that.typeHandler) : that.typeHandler != null) return false;
-        if (sequenceName != null ? !sequenceName.equals(that.sequenceName) : that.sequenceName != null) return false;
-        if (generator != null ? !generator.equals(that.generator) : that.generator != null) return false;
+        if (id != that.id) {
+            return false;
+        }
+        if (uuid != that.uuid) {
+            return false;
+        }
+        if (identity != that.identity) {
+            return false;
+        }
+        if (table != null ? !table.equals(that.table) : that.table != null) {
+            return false;
+        }
+        if (property != null ? !property.equals(that.property) : that.property != null) {
+            return false;
+        }
+        if (column != null ? !column.equals(that.column) : that.column != null) {
+            return false;
+        }
+        if (javaType != null ? !javaType.equals(that.javaType) : that.javaType != null) {
+            return false;
+        }
+        if (jdbcType != that.jdbcType) {
+            return false;
+        }
+        if (typeHandler != null ? !typeHandler.equals(that.typeHandler) : that.typeHandler != null) {
+            return false;
+        }
+        if (sequenceName != null ? !sequenceName.equals(that.sequenceName) : that.sequenceName != null) {
+            return false;
+        }
+        if (generator != null ? !generator.equals(that.generator) : that.generator != null) {
+            return false;
+        }
         return !(orderBy != null ? !orderBy.equals(that.orderBy) : that.orderBy != null);
 
     }

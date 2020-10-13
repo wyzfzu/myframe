@@ -17,7 +17,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <guava.version>20.0</guava.version>
         <commons.io.version>2.4</commons.io.version>
         <commons.lang3.version>3.4</commons.lang3.version>
